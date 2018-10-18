@@ -1,5 +1,6 @@
-from .dataloader import DataLoader, DataGenerator
+from core.dataloader import DataLoader, DataGenerator
 from keras.models import Model
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Input, Flatten, BatchNormalization, Activation, Dense
 from keras.layers import Bidirectional, LSTM
 
@@ -28,11 +29,14 @@ def train_model():
 
     model = RNN(dataloader.get_shape())
     model.summary()
+    early_stop = EarlyStopping(monitor='val_loss', patience=10)
+    checkpointer = ModelCheckpoint(filepath='./MLmodels/rnn.h5', verbose=0, save_best_only=True)
     model.fit_generator(
         generator=train_generator,
         validation_data=val_generator,
-        epochs=100,
-        verbose=1
+        epochs=10,
+        verbose=1,
+        callbacks=[early_stop, checkpointer]
     )
 
     pass
