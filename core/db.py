@@ -5,6 +5,7 @@ import glob
 import pandas as pd
 import sqlite3
 import twstock
+from passlib.hash import sha256_crypt
 
 DEFAULT_HISTORY_PATH = './history'
 DEFAULT_DB_PATH = './DB/stock.sqlite'
@@ -137,3 +138,82 @@ def dump2db(history_path=DEFAULT_HISTORY_PATH):
         for year_data_file in data_files:          
             #continue
             store_year_data(stock_code, year_data_file)
+
+
+def db_init_user_table():
+    connection = db_connect()
+    cursor = connection.cursor()
+
+    #cursor.execute('PRAGMA foreign_keys = ON')
+    cursor.execute("""
+        CREATE TABLE users (
+            username VARCHAR(30) UNIQUE NOT NULL PRIMARY KEY,
+            name VARCHAR(100),
+            email VARCHAR(100),
+            password VARCHAR(100),
+            register_date DATETIME DEFAULT CURRENT_TIMESTAMP
+        )""")
+
+    # testing
+    #cursor.execute("INSERT INTO stock (stock_code, name, first_record_year, last_record_year) VALUES (?, ?, ?, ?)", (5566, '測試公司', 2008, 2018))
+    #insert_test_sql = """ INSERT INTO stock_history (stock_code, date, capacity, turnover, open, high, low, close, change, transactions) 
+    #          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+    #task_1 = (5566, '2018-01-01', 1, 2, 3.1, 3.2, 3.0, 3.1, 0.7, 100)
+    #cursor.execute(insert_test_sql, task_1)
+    #task_2 = (5576, '2018-01-01', 1, 2, 3.1, 3.2, 3.0, 3.1, 0.7, 100)
+    #cursor.execute(insert_test_sql, task_2)
+    connection.commit()
+    connection.close()
+
+
+def db_register(username, name, email, password):
+    connection  = db_connect()
+    cursor = connection.cursor()
+
+    # Execute query
+    insert_sql = """INSERT INTO users(username, name, email, password) VALUES (?, ?, ?, ?)"""
+    insert_sql_tuple = (username, name, email, password)
+    cursor.execute(insert_sql, insert_sql_tuple)
+
+    # Commit to DB
+    connection.commit()
+
+    # Close connection
+    connection.close()
+
+    return True
+
+
+
+class LoginException(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+
+def db_user_login(username, password_candidate):
+    connection = db_connect()
+    # Get result as dict()
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+
+    # Execute query
+    sql = """ SELECT * FROM users WHERE username = ?"""
+    sql_tuple = (username, )
+    cursor.execute(sql, sql_tuple)
+    result = cursor.fetchone()
+
+    # Commit to DB
+    connection.commit()
+
+    # Close connection
+    connection.close()
+
+    if result:
+        password = result['password']
+        if sha256_crypt.verify(password_candidate, password):
+            # Pass
+            pass
+        else:
+            raise LoginException("Password Mismatch")
+    else:
+        raise LoginException("User Not Found")

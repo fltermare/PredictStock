@@ -1,22 +1,27 @@
 #!/usr/bin/env python3
 import configparser
-import flask
-from keras.models import load_model
-from core.training import train_model
-from keras.applications import ResNet50
-from keras.preprocessing.image import img_to_array
-from keras.applications import imagenet_utils
-from PIL import Image
-import numpy as np
-import tensorflow as tf
-import flask
 import io
+#from keras.models import load_model
+#from core.training import train_model
+#from keras.applications import ResNet50
+#from keras.preprocessing.image import img_to_array
+#from keras.applications import imagenet_utils
+#from PIL import Image
+#import numpy as np
+#import tensorflow as tf
+import flask
+from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
+from wtforms import Form, StringField, TextAreaField, PasswordField, validators
+from passlib.hash import sha256_crypt
+from functools import wraps
 
-app = flask.Flask(__name__)
+from core.db import db_register, db_user_login
+from core.db import LoginException
+
+app = Flask(__name__)
 model = None
-graph = None
 
-
+"""
 def load_ml_model():
     global model
     model = ResNet50(weights="imagenet")
@@ -70,11 +75,104 @@ def predict():
 
     # return the data dictionary as a JSON response
     return flask.jsonify(data)
+"""
+
+@app.route('/')
+def index():
+    return render_template('home.html')
+
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+### Register Form Class
+class RegisterForm(Form):
+    username = StringField('Username', [validators.Length(min=3, max=25)])
+    name = StringField('Name', [validators.Length(min=1, max=50)])
+    email = StringField('Email', [validators.Length(min=6, max=50)])
+    password = PasswordField('Password', [
+        validators.DataRequired(),
+        validators.EqualTo('confirm', message='Passwords do not match')
+    ])
+    confirm = PasswordField('Confirm Password')
+
+### User Register
+@app.route('/register', methods=['Get', 'Post'])
+def register():
+    form = RegisterForm(request.form)
+    if request.method == 'POST' and form.validate():
+        username = form.username.data
+        name = form.name.data
+        email = form.email.data
+        password = sha256_crypt.encrypt(str(form.password.data))
+
+        # Insert to DB
+        if db_register(username, name, email, password):
+            flash("Your are now registered and can log in", 'success')
+
+        return redirect(url_for('index'))
+
+    return render_template('register.html', form=form)
+
+### User login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # Get Form Value
+        username = request.form['username']
+        password_candidate = request.form['password']
+        try:
+            db_user_login(username, password_candidate)
+        except LoginException as e:
+            # Failed to login
+            app.logger.info(e.msg)
+            error = "Invalid Login"
+            return render_template('login.html', error=error)
+
+        # Login Successful
+        app.logger.info('PASS')
+        session['logged_in'] = True
+        session['username'] = username
+
+        flash('You are now logged in', 'success')
+        return redirect(url_for('dashboard'))
+
+    return render_template('login.html')
+
+
+### Check if user logged in
+def is_logged_in(func):
+    @wraps(func)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return func(*args, **kwargs)
+        else:
+            flash('Unauthorized, Please login', 'danger')
+            return redirect(url_for('login'))
+    return wrap
+
+
+### Logout
+@app.route('/logout')
+@is_logged_in
+def logout():
+    session.clear()
+    flash('You are now logged out', 'success')
+    return redirect(url_for('login'))
+
+
+### Dashboard
+@app.route('/dashboard')
+@is_logged_in
+def dashboard():
+    return render_template('dashboard.html')
 
 
 def main():
     #train_model()
-    print(("* Loading Keras model and Flask starting server..."
-           "please wait until server has fully started"))
-    load_ml_model()
-    app.run()
+    #print(("* Loading Keras model and Flask starting server..."
+    #       "please wait until server has fully started"))
+    #load_ml_model()
+    app.secret_key = "secret123"
+    app.run(debug=True)
