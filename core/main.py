@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 import configparser
 import io
-#from keras.models import load_model
-#from core.training import train_model
+from keras.models import load_model
+from core.training import train_model
+from core.predict import stock_predict
 #from keras.applications import ResNet50
 #from keras.preprocessing.image import img_to_array
 #from keras.applications import imagenet_utils
 #from PIL import Image
 #import numpy as np
 #import tensorflow as tf
-import flask
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
@@ -21,12 +21,12 @@ from core.db import LoginException
 app = Flask(__name__)
 model = None
 
-"""
+
 def load_ml_model():
     global model
-    model = ResNet50(weights="imagenet")
+    model = load_model('./MLmodels/rnn.h5')
 
-
+"""
 def prepare_image(image, target):
     # if the image mode is not RGB, convert it
     if image.mode != "RGB":
@@ -86,6 +86,7 @@ def index():
 def about():
     return render_template('about.html')
 
+
 ### Register Form Class
 class RegisterForm(Form):
     username = StringField('Username', [validators.Length(min=3, max=25)])
@@ -96,6 +97,7 @@ class RegisterForm(Form):
         validators.EqualTo('confirm', message='Passwords do not match')
     ])
     confirm = PasswordField('Confirm Password')
+
 
 ### User Register
 @app.route('/register', methods=['Get', 'Post'])
@@ -114,6 +116,7 @@ def register():
         return redirect(url_for('index'))
 
     return render_template('register.html', form=form)
+
 
 ### User login
 @app.route('/login', methods=['GET', 'POST'])
@@ -163,16 +166,35 @@ def logout():
 
 
 ### Dashboard
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 @is_logged_in
 def dashboard():
+    if request.method == 'POST':
+        # Get Form Value
+        stock_code = request.form['stock_code']
+        date = request.form['date']
+        if not stock_code or not date:
+            error = 'Please Select Stock and Date'
+            return render_template('dashboard.html', error=error)
+
+        # ML thing
+        stock_predict(model, stock_code, date)
+
+        # return prediction
+        prediction = dict()
+        prediction['stock_code'] = stock_code
+        prediction['date'] = date
+        #flash('You are now logged in', 'success')
+        return render_template('dashboard.html', prediction=prediction)
+
     return render_template('dashboard.html')
 
 
 def main():
     #train_model()
-    #print(("* Loading Keras model and Flask starting server..."
-    #       "please wait until server has fully started"))
-    #load_ml_model()
+    load_ml_model()
+    print((" * Loading Keras model and Flask starting server..."
+           "please wait until server has fully started"))
+
     app.secret_key = "secret123"
     app.run(debug=True)

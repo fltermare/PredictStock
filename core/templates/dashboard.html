@@ -1,5 +1,22 @@
 {% extends 'layout.html' %}
 
 {% block body %}
-    <h1>Dashboard <small>Welcome {{session.username}}</small></h1>
+    <h1>Dashboard  <small>Welcome {{session.username}}</small></h1>
+    <a class="btn btn-success" href='/dashboard'>Add</a>
+    {% if prediction %}
+    <h2>{{prediction.stock_code}}</h2>
+    <h2>{{prediction.date}}</h2>
+    {% endif %}
+    <form action="" method="POST">
+        <div class="form-group">
+            <label>Stock Code</label>
+            <input type="text" name="stock_code" class="form-control" value={{request.form.stock_code}}>
+        </div>
+        <div class="form-group">
+            <label>Date</label>
+            <input type="text" name="date" class="form-control" value={{request.form.date}}>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
 {% endblock%}

@@ -3,7 +3,7 @@
 import random
 import numpy as np
 import pandas as pd
-from .db import db_connect
+from core.db import db_connect
 from sklearn import preprocessing
 from keras.utils import Sequence
 
