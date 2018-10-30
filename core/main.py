@@ -9,7 +9,7 @@ from core.predict import stock_predict
 #from keras.applications import imagenet_utils
 #from PIL import Image
 #import numpy as np
-#import tensorflow as tf
+import tensorflow as tf
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
@@ -20,11 +20,14 @@ from core.db import LoginException
 
 app = Flask(__name__)
 model = None
+graph = None
 
 
 def load_ml_model():
-    global model
+    global model, graph
     model = load_model('./MLmodels/rnn.h5')
+    graph = tf.get_default_graph()
+
 
 """
 def prepare_image(image, target):
@@ -178,14 +181,23 @@ def dashboard():
             return render_template('dashboard.html', error=error)
 
         # ML thing
-        stock_predict(model, stock_code, date)
+        try:
+            predict_price, real_predict_date = stock_predict(model, graph, stock_code, date)
+        except:
+            error = "Error Occured"
+            return render_template('dashboard.html', error=error)
 
         # return prediction
         prediction = dict()
         prediction['stock_code'] = stock_code
-        prediction['date'] = date
+        prediction['date'] = real_predict_date
+        prediction['price'] = predict_price
         #flash('You are now logged in', 'success')
-        return render_template('dashboard.html', prediction=prediction)
+        if real_predict_date != date:
+            error = "%s is not a valid trading date" % date
+            return render_template('dashboard.html', prediction=prediction, error=error)
+        else:
+            return render_template('dashboard.html', prediction=prediction)
 
     return render_template('dashboard.html')
 
@@ -193,6 +205,8 @@ def dashboard():
 def main():
     #train_model()
     load_ml_model()
+    #stock_predict(model, '2834', '2018-08-03')
+    #return
     print((" * Loading Keras model and Flask starting server..."
            "please wait until server has fully started"))
 

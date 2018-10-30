@@ -184,7 +184,6 @@ def db_register(username, name, email, password):
     return True
 
 
-
 class LoginException(Exception):
     def __init__(self, msg):
         self.msg = msg

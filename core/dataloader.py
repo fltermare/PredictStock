@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+import datetime
 import random
 import numpy as np
 import pandas as pd
+import pickle
 from core.db import db_connect
 from sklearn import preprocessing
 from keras.utils import Sequence
@@ -68,6 +70,8 @@ class DataLoader():
         # gen scaler
         if self.is_train:
             self.gen_scaler(stock_code, df[normalize_columns])
+        else:
+            self.scalers[stock_code] = pickle.load(open("MLmodels/scalers/"+stock_code+".scaler", "rb"))
 
         df[['ori_close', 'ori_change']] = df[['close', 'change']]
         df[normalize_columns] = self.scalers[stock_code].transform(df[normalize_columns])
@@ -78,12 +82,13 @@ class DataLoader():
         """
         generate scaler for specific stock using all history data
         todo:
-            - save scaler to disk
+            - save scaler to disk (done)
         """
 
         scaler = preprocessing.MaxAbsScaler().fit(parts_df.values)       
         parts_df= pd.DataFrame(scaler.transform(parts_df))
         self.scalers[stock_code] = scaler
+        pickle.dump(scaler, open("MLmodels/scalers/"+stock_code+".scaler", "wb"))
 
     def get_shape(self):
         return (self.seq_len, 10)
@@ -137,3 +142,53 @@ class DataGenerator(Sequence):
         feature = np.array(feature)
         target = np.array(target)
         return feature, target
+
+
+class PredictGenerator(Sequence, DataLoader):
+    def __init__(self, stock_code, predict_date, seq_len=15):
+        self.seq_len, self.is_train = seq_len, False
+        self.scalers = dict()
+        self.stock_codes = [str(x) for x in [stock_code] if x.isdigit()]
+        self.all_data, self.all_idxs = self.load_history()
+        self.select_time_period(predict_date)
+
+    def select_time_period(self, predict_date):
+        idx = self.__date_valid(predict_date)
+
+        # Select past `seq_len` data before predict_date
+        self.selected_data = self.all_data.loc[list(range(idx-self.seq_len, idx)), :]
+        print(self.all_data.loc[list(range(idx-self.seq_len, idx+1)), :])
+
+    def __date_valid(self, predict_date):
+        """
+        Check whether the given date is valid
+        - the date in the pass and is a trade date
+        - the date of next trade date
+        """
+        self.all_data['date'] = pd.to_datetime(self.all_data['date'])
+        predict_date = pd.Timestamp(predict_date)
+
+        if predict_date in set(self.all_data['date']):
+            idx = self.all_data.index[self.all_data['date']==predict_date].values
+            idx = idx[0]
+            self.real_predict_date = str(predict_date.strftime('%Y-%m-%d'))
+        elif predict_date <= self.all_data.iloc[-1]['date']:
+            # predict_date is in the pass
+            idx = self.all_data.index[predict_date <= self.all_data['date']].values
+            idx = idx[0]
+            self.real_predict_date = str(self.all_data.iloc[idx]['date'].strftime('%Y-%m-%d'))
+        else:
+            # predict_date is in the future
+            idx = self.all_data.index[-1] + 1
+            self.real_predict_date = 'Next Trading Date'
+        return int(idx)
+
+    def ori_close(self):
+        return self.selected_data.loc[:, 'ori_close'].values[0]
+
+    def __len__(self):
+        return 1
+
+    def __getitem__(self, idx):
+        feature_col = ['capacity', 'turnover', 'open', 'high', 'low', 'close', 'change', 'transactions', 'previous_day', 'follow_day']
+        return np.array([self.selected_data[feature_col].values])

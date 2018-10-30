@@ -4,8 +4,9 @@
     <h1>Dashboard  <small>Welcome {{session.username}}</small></h1>
     <a class="btn btn-success" href='/dashboard'>Add</a>
     {% if prediction %}
-    <h2>{{prediction.stock_code}}</h2>
-    <h2>{{prediction.date}}</h2>
+    <h2>Code: {{prediction.stock_code}}</h2>
+    <h2>Date: {{prediction.date}}</h2>
+    <h2>Expected Price: {{prediction.price}}</h2>
     {% endif %}
     <form action="" method="POST">
         <div class="form-group">
