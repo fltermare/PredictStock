@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import config
 import datetime
 import glob
 import pandas as pd
@@ -7,8 +8,8 @@ import sqlite3
 import twstock
 from passlib.hash import sha256_crypt
 
-DEFAULT_HISTORY_PATH = './history'
-DEFAULT_DB_PATH = './DB/stock.sqlite'
+DEFAULT_HISTORY_PATH = config.STOCK_HISTORY_PATH
+DEFAULT_DB_PATH = config.DB_PATH
 
 
 def db_init():

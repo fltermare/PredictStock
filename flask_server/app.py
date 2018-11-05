@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import configparser
+import config
 import io
 from keras.models import load_model
 from core.training import train_model
@@ -25,7 +26,7 @@ graph = None
 
 def load_ml_model():
     global model, graph
-    model = load_model('./MLmodels/rnn.h5')
+    model = load_model(config.ML_MODLE_PATH)
     graph = tf.get_default_graph()
 
 
