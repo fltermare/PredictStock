@@ -7,6 +7,7 @@ import string, random
 from flask_caching import Cache
 from datetime import datetime
 
+from core.db import db_connect
 
 def display_stock(server):
     app = Dash(server=server, url_base_pathname='/dash/')
@@ -37,7 +38,7 @@ def display_stock(server):
             value = rr.str.slice(1,).str.join('=')   
             if 'secret' in list(key) and value[key == 'secret'].iloc[0] == create_secret(str(datetime.now()).split(':')[0]):
                 return  html.Div([
-                            dcc.Input(id='input', type='text', value=''),
+                            dcc.Input(id='input', type='stock_code', value=''),
                             html.Div(id='target')
                         ])
         return html.Div('Error ! Forbidden !')
@@ -45,15 +46,29 @@ def display_stock(server):
     @app.callback(
             Output('target', 'children'),
             [Input('input', 'value')])
-    def callback(text):
-        #return "callback received value: {}".format(text)
+    def callback(stock_code):
+
+        connection = db_connect()
+        query_sql = """
+                    SELECT * FROM stock_history
+                    WHERE stock_code=%s
+                    ORDER BY stock_history.date
+                    """ % stock_code
+        df = pd.read_sql(query_sql, connection)
+        if len(df) == 0:
+            stock_code = 'Not Exist'
+            x_data, y_data = [1], [1]
+        else:
+            x_data, y_data = df['date'], df['close']
+        connection.close()
+
         return dcc.Graph(
             figure={
                 'data': [
-                    {'x': [1, 2, 3, 4, 5], 'y': [10, 20, 40, 80, 160], 'type': 'line', 'name': text},
+                    {'x': x_data, 'y': y_data, 'type': 'line', 'name': stock_code},
                 ],
                 'layout': {
-                    'title': text
+                    'title': stock_code
                 }
             }
         )

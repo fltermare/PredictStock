@@ -193,7 +193,7 @@ def dashboard():
             error = "Error Occured"
             return render_template('dashboard.html', error=error, dash_url=dash_url)
 
-        # return prediction
+        # Return prediction
         prediction = dict()
         prediction['stock_code'] = stock_code
         prediction['date'] = real_predict_date
