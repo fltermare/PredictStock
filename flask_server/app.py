@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import configparser
 import config
+import dash
 import io
 from keras.models import load_model
 from core.training import train_model
@@ -19,7 +20,12 @@ from functools import wraps
 from core.db import db_register, db_user_login
 from core.db import LoginException
 
+from dash_app import dash_app
+from datetime import datetime
+
 app = Flask(__name__)
+app, create_secret = dash_app.display_stock(app)
+
 model = None
 graph = None
 
@@ -80,6 +86,7 @@ def predict():
     # return the data dictionary as a JSON response
     return flask.jsonify(data)
 """
+
 
 @app.route('/')
 def index():
@@ -157,6 +164,7 @@ def is_logged_in(func):
         else:
             flash('Unauthorized, Please login', 'danger')
             return redirect(url_for('login'))
+
     return wrap
 
 
@@ -173,20 +181,23 @@ def logout():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @is_logged_in
 def dashboard():
+    ### dash app
+    dash_url = '/dash?secret={}'.format(create_secret(str(datetime.now()).split(':')[0]))
+
     if request.method == 'POST':
         # Get Form Value
         stock_code = request.form['stock_code']
         date = request.form['date']
         if not stock_code or not date:
             error = 'Please Select Stock and Date'
-            return render_template('dashboard.html', error=error)
+            return render_template('dashboard.html', error=error, dash_url=dash_url)
 
         # ML thing
         try:
             predict_price, real_predict_date = stock_predict(model, graph, stock_code, date)
         except:
             error = "Error Occured"
-            return render_template('dashboard.html', error=error)
+            return render_template('dashboard.html', error=error, dash_url=dash_url)
 
         # return prediction
         prediction = dict()
@@ -196,11 +207,11 @@ def dashboard():
         #flash('You are now logged in', 'success')
         if real_predict_date != date:
             error = "%s is not a valid trading date" % date
-            return render_template('dashboard.html', prediction=prediction, error=error)
+            return render_template('dashboard.html', prediction=prediction, error=error, dash_url=dash_url)
         else:
-            return render_template('dashboard.html', prediction=prediction)
+            return render_template('dashboard.html', prediction=prediction, dash_url=dash_url)
 
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', dash_url=dash_url)
 
 
 def main():
