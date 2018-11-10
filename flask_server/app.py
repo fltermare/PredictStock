@@ -3,24 +3,18 @@ import configparser
 import config
 import dash
 import io
-from keras.models import load_model
-from core.training import train_model
-from core.predict import stock_predict
-#from keras.applications import ResNet50
-#from keras.preprocessing.image import img_to_array
-#from keras.applications import imagenet_utils
-#from PIL import Image
-#import numpy as np
 import tensorflow as tf
+from keras.models import load_model
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
 
+from core.training import train_model
+from core.predict import stock_predict
 from core.db import db_register, db_user_login
 from core.db import LoginException
-
-from dash_app import dash_app
+from core import dash_app
 from datetime import datetime
 
 app = Flask(__name__)
