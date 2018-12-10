@@ -11,7 +11,14 @@
     <form action="" method="POST">
         <div class="form-group">
             <label>Stock Code</label>
+            <select name="stock_code" class="form-control">
+            {% for stock_code, stock_name in stock_code_name %}
+                <option value="{{stock_code}}">({{stock_code}}) {{stock_name}}</option>
+            {% endfor %}
+            </select>
+            <!--
             <input type="text" name="stock_code" class="form-control" value={{request.form.stock_code}}>
+            -->
         </div>
         <div class="form-group">
             <label>Date</label>

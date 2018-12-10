@@ -13,7 +13,7 @@ from functools import wraps
 from core.training import train_model
 from core.predict import stock_predict
 from core.db import db_register, db_user_login
-from core.db import LoginException
+from core.db import LoginException, get_available_stocks
 from core import dash_app
 from datetime import datetime
 
@@ -22,6 +22,11 @@ app, create_secret = dash_app.display_stock(app)
 
 model = None
 graph = None
+CUDA_VISIBLE_DEVICES=1
+from keras.backend.tensorflow_backend import set_session
+configuration = tf.ConfigProto()
+configuration.gpu_options.per_process_gpu_memory_fraction = 0.3
+set_session(tf.Session(config=configuration))
 
 
 def load_ml_model():
@@ -178,20 +183,23 @@ def dashboard():
     ### dash app
     dash_url = '/dash?secret={}'.format(create_secret(str(datetime.now()).split(':')[0]))
 
+    # Get Stock Codes
+    stock_code_name = get_available_stocks()
+
     if request.method == 'POST':
         # Get Form Value
         stock_code = request.form['stock_code']
         date = request.form['date']
         if not stock_code or not date:
             error = 'Please Select Stock and Date'
-            return render_template('dashboard.html', error=error, dash_url=dash_url)
+            return render_template('dashboard.html', error=error, dash_url=dash_url, stock_code_name=stock_code_name)
 
         # ML thing
         try:
             predict_price, real_predict_date = stock_predict(model, graph, stock_code, date)
         except:
             error = "Error Occured"
-            return render_template('dashboard.html', error=error, dash_url=dash_url)
+            return render_template('dashboard.html', error=error, dash_url=dash_url, stock_code_name=stock_code_name)
 
         # Return prediction
         prediction = dict()
@@ -201,11 +209,11 @@ def dashboard():
         #flash('You are now logged in', 'success')
         if real_predict_date != date:
             error = "%s is not a valid trading date" % date
-            return render_template('dashboard.html', prediction=prediction, error=error, dash_url=dash_url)
+            return render_template('dashboard.html', prediction=prediction, error=error, dash_url=dash_url, stock_code_name=stock_code_name)
         else:
-            return render_template('dashboard.html', prediction=prediction, dash_url=dash_url)
+            return render_template('dashboard.html', prediction=prediction, dash_url=dash_url, stock_code_name=stock_code_name)
 
-    return render_template('dashboard.html', dash_url=dash_url)
+    return render_template('dashboard.html', dash_url=dash_url, stock_code_name=stock_code_name)
 
 
 def main():
