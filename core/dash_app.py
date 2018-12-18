@@ -44,7 +44,7 @@ def display_stock(server):
                 stock_code_name = get_available_stocks()
 
                 return html.Div([
-                    #dcc.Input(id='stock_code_input', type='stock_code', value='5880'),
+                    html.Label('Dropdown'),
                     dcc.Dropdown(
                         id='stock_code_input',
                         options=[
@@ -52,26 +52,64 @@ def display_stock(server):
                         ],
                         value=stock_code_name[0][0]
                     ),
+                    html.Label('Slider'),
+                    dcc.Slider(
+                        id='select_interval',
+                        min=0,
+                        max=6,
+                        marks={
+                            1: '30 days',
+                            2: '90 days',
+                            3: 'half year',
+                            4: '1 year',
+                            5: 'all'},
+                        value=2,
+                    ),
+                    html.Br(),
                     html.Div(id='target_div')
                 ])
         return html.Div('Error ! Forbidden !')
 
-    @app.callback(Output('target_div', 'children'), [Input('stock_code_input', 'value')])
-    def update_stock_trend(stock_code):
+    @app.callback(
+        Output('target_div', 'children'),
+        [Input('stock_code_input', 'value'),
+         Input('select_interval', 'value')])
+    def update_stock_trend(stock_code, select_interval):
 
         connection = db_connect()
+
+        # Fetch name
+        query_sql = """
+                    SELECT name FROM stock
+                    WHERE stock_code=%s
+                    """ % stock_code
+        df = pd.read_sql(query_sql, connection)
+        stock_name = df['name'].values[0]
+
+        # Fetch price
         query_sql = """
                     SELECT * FROM stock_history
                     WHERE stock_code=%s
                     ORDER BY stock_history.date
                     """ % stock_code
         df = pd.read_sql(query_sql, connection)
+
         connection.close()
+
         if df.empty:
-            stock_code = 'Not Exist'
+            layout_title = 'Not Exist'
             x_data, y_data = [1], [1]
         else:
+            layout_title = "(%s) %s" % (stock_code, stock_name)
             x_data, y_data = df['date'], df['close']
+            if select_interval == 1:
+                x_data, y_data = x_data[-30:], y_data[-30:]
+            elif select_interval == 2:
+                x_data, y_data = x_data[-90:], y_data[-90:]
+            elif select_interval == 3:
+                x_data, y_data = x_data[-180:], y_data[-180:]
+            elif select_interval == 4:
+                x_data, y_data = x_data[-365:], y_data[-365:]
 
         return dcc.Graph(
             figure={
@@ -84,7 +122,7 @@ def display_stock(server):
                     },
                 ],
                 'layout': {
-                    'title': stock_code
+                    'title': layout_title
                 }
             })
 
