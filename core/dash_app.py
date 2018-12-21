@@ -43,6 +43,9 @@ def display_stock(server):
                 # Query Stock in DB
                 stock_code_name = get_available_stocks()
 
+                # Get selected stock_code from request_args
+                selected_stock_code = int(value[key == 'stock_code'].iloc[0])
+
                 return html.Div([
                     html.Label('Dropdown'),
                     dcc.Dropdown(
@@ -50,7 +53,7 @@ def display_stock(server):
                         options=[
                             {'label': "(%s) %s" % (stock_code, stock_name), 'value': stock_code} for stock_code, stock_name in stock_code_name
                         ],
-                        value=stock_code_name[0][0]
+                        value=selected_stock_code
                     ),
                     html.Label('Slider'),
                     dcc.Slider(

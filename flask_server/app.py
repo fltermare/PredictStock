@@ -180,16 +180,19 @@ def logout():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @is_logged_in
 def dashboard():
-    ### dash app
-    dash_url = '/dash?secret={}'.format(create_secret(str(datetime.now()).split(':')[0]))
 
     # Get Stock Codes
     stock_code_name = get_available_stocks()
+
+    ### dash app
+    dash_secret = create_secret(str(datetime.now()).split(':')[0])
+    dash_url = '/dash?secret={}&stock_code={}'.format(dash_secret, stock_code_name[0][0])
 
     if request.method == 'POST':
         # Get Form Value
         stock_code = request.form['stock_code']
         date = request.form['date']
+        dash_url = '/dash?secret={}&stock_code={}'.format(dash_secret, stock_code)
         if not stock_code or not date:
             error = 'Please Select Stock and Date'
             return render_template('dashboard.html', error=error, dash_url=dash_url, stock_code_name=stock_code_name)
@@ -201,9 +204,15 @@ def dashboard():
             error = "Error Occured"
             return render_template('dashboard.html', error=error, dash_url=dash_url, stock_code_name=stock_code_name)
 
+        # Reorder stock_code_name
+        selected_stock_code_index = [i for i, v in enumerate(stock_code_name) if v[0] == int(stock_code)].pop()
+        selected_stock_code_name = stock_code_name.pop(selected_stock_code_index)
+        stock_code_name.insert(0, selected_stock_code_name)
+
         # Return prediction
         prediction = dict()
         prediction['stock_code'] = stock_code
+        prediction['stock_name'] = selected_stock_code_name[1]
         prediction['date'] = real_predict_date
         prediction['price'] = predict_price
         #flash('You are now logged in', 'success')
