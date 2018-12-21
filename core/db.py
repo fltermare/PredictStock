@@ -217,3 +217,18 @@ def db_user_login(username, password_candidate):
             raise LoginException("Password Mismatch")
     else:
         raise LoginException("User Not Found")
+
+
+def get_available_stocks():
+    connection  = db_connect()
+    cursor = connection.cursor()
+
+    # Execute query
+    query_sql = """SELECT stock_code, name FROM stock"""
+    cursor.execute(query_sql)
+    result = cursor.fetchall()
+    print(result)
+    print(type(result))
+
+    connection.close()
+    return result

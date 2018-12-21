@@ -1,27 +1,32 @@
 #!/usr/bin/env python3
 import configparser
 import config
+import dash
 import io
-from keras.models import load_model
-from core.training import train_model
-from core.predict import stock_predict
-#from keras.applications import ResNet50
-#from keras.preprocessing.image import img_to_array
-#from keras.applications import imagenet_utils
-#from PIL import Image
-#import numpy as np
 import tensorflow as tf
+from keras.models import load_model
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
 
+from core.training import train_model
+from core.predict import stock_predict
 from core.db import db_register, db_user_login
-from core.db import LoginException
+from core.db import LoginException, get_available_stocks
+from core import dash_app
+from datetime import datetime
 
 app = Flask(__name__)
+app, create_secret = dash_app.display_stock(app)
+
 model = None
 graph = None
+CUDA_VISIBLE_DEVICES=1
+from keras.backend.tensorflow_backend import set_session
+configuration = tf.ConfigProto()
+configuration.gpu_options.per_process_gpu_memory_fraction = 0.3
+set_session(tf.Session(config=configuration))
 
 
 def load_ml_model():
@@ -80,6 +85,7 @@ def predict():
     # return the data dictionary as a JSON response
     return flask.jsonify(data)
 """
+
 
 @app.route('/')
 def index():
@@ -157,6 +163,7 @@ def is_logged_in(func):
         else:
             flash('Unauthorized, Please login', 'danger')
             return redirect(url_for('login'))
+
     return wrap
 
 
@@ -173,34 +180,49 @@ def logout():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @is_logged_in
 def dashboard():
+
+    # Get Stock Codes
+    stock_code_name = get_available_stocks()
+
+    ### dash app
+    dash_secret = create_secret(str(datetime.now()).split(':')[0])
+    dash_url = '/dash?secret={}&stock_code={}'.format(dash_secret, stock_code_name[0][0])
+
     if request.method == 'POST':
         # Get Form Value
         stock_code = request.form['stock_code']
         date = request.form['date']
+        dash_url = '/dash?secret={}&stock_code={}'.format(dash_secret, stock_code)
         if not stock_code or not date:
             error = 'Please Select Stock and Date'
-            return render_template('dashboard.html', error=error)
+            return render_template('dashboard.html', error=error, dash_url=dash_url, stock_code_name=stock_code_name)
 
         # ML thing
         try:
             predict_price, real_predict_date = stock_predict(model, graph, stock_code, date)
         except:
             error = "Error Occured"
-            return render_template('dashboard.html', error=error)
+            return render_template('dashboard.html', error=error, dash_url=dash_url, stock_code_name=stock_code_name)
 
-        # return prediction
+        # Reorder stock_code_name
+        selected_stock_code_index = [i for i, v in enumerate(stock_code_name) if v[0] == int(stock_code)].pop()
+        selected_stock_code_name = stock_code_name.pop(selected_stock_code_index)
+        stock_code_name.insert(0, selected_stock_code_name)
+
+        # Return prediction
         prediction = dict()
         prediction['stock_code'] = stock_code
+        prediction['stock_name'] = selected_stock_code_name[1]
         prediction['date'] = real_predict_date
         prediction['price'] = predict_price
         #flash('You are now logged in', 'success')
         if real_predict_date != date:
             error = "%s is not a valid trading date" % date
-            return render_template('dashboard.html', prediction=prediction, error=error)
+            return render_template('dashboard.html', prediction=prediction, error=error, dash_url=dash_url, stock_code_name=stock_code_name)
         else:
-            return render_template('dashboard.html', prediction=prediction)
+            return render_template('dashboard.html', prediction=prediction, dash_url=dash_url, stock_code_name=stock_code_name)
 
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', dash_url=dash_url, stock_code_name=stock_code_name)
 
 
 def main():

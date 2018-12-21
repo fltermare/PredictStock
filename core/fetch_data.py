@@ -65,10 +65,13 @@ def stock_history(stock_code='2330', years=[2018]):
             if year == current_year and month >= current_month:
                 break
             stock.fetch(year, month)
-            print('get %s'%stock_code, year, month)
-            time.sleep(10)
             tmp = copy.deepcopy(stock)
+            if not tmp:
+                # if empty
+                continue
+            print('get %s'%stock_code, year, month)
             tmp_df_list.append(stock2df(tmp))
+            time.sleep(15)
         history_result = pd.concat(tmp_df_list, ignore_index=True)
         if history_result.empty:
             print(stock_code, year, 'empty')
