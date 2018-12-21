@@ -220,6 +220,12 @@ def db_user_login(username, password_candidate):
 
 
 def get_available_stocks():
+    """get available stocks in db
+    Returns:
+        result: a list of tuple
+                [(stock_code `int`, stock_name `str`), ...]
+    """
+
     connection  = db_connect()
     cursor = connection.cursor()
 
@@ -227,8 +233,6 @@ def get_available_stocks():
     query_sql = """SELECT stock_code, name FROM stock"""
     cursor.execute(query_sql)
     result = cursor.fetchall()
-    print(result)
-    print(type(result))
 
     connection.close()
     return result
