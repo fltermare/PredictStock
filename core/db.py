@@ -19,7 +19,9 @@ def db_init():
     cursor.execute("""
         CREATE TABLE stock (
             stock_code INTEGER PRIMARY KEY UNIQUE NOT NULL,
-            name TXT NOT NULL
+            name TXT NOT NULL,
+            first_record_date DATE,
+            last_record_date DATE
         )""")
     cursor.execute("""
         CREATE TABLE year (
@@ -100,10 +102,10 @@ def store_year_data(stock_code, year_data_file):
         # insert data record (per year)
         year_data = pd.read_csv(year_data_file)
         for index, day_data in year_data.iterrows():
-            insert_sql = """ INSERT INTO stock_history (stock_code, date, capacity, turnover, open, high, low, close, change, transactions) 
+            insert_sql = """ INSERT INTO stock_history (stock_code, date, capacity, turnover, open, high, low, close, change, transactions)
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             insert_sql_tuple = (stock_code, day_data['date'], day_data['capacity'], day_data['turnover'],
-                                day_data['open'], day_data['high'], day_data['low'], day_data['close'], 
+                                day_data['open'], day_data['high'], day_data['low'], day_data['close'],
                                 day_data['change'], day_data['transaction'])
             cursor.execute(insert_sql, insert_sql_tuple)
             try:
@@ -113,10 +115,10 @@ def store_year_data(stock_code, year_data_file):
     elif year == this_year:
         year_data = pd.read_csv(year_data_file)
         for index, day_data in year_data.iterrows():
-            insert_sql = """ INSERT OR IGNORE INTO stock_history (stock_code, date, capacity, turnover, open, high, low, close, change, transactions) 
+            insert_sql = """ INSERT OR IGNORE INTO stock_history (stock_code, date, capacity, turnover, open, high, low, close, change, transactions)
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             insert_sql_tuple = (stock_code, day_data['date'], day_data['capacity'], day_data['turnover'],
-                                day_data['open'], day_data['high'], day_data['low'], day_data['close'], 
+                                day_data['open'], day_data['high'], day_data['low'], day_data['close'],
                                 day_data['change'], day_data['transaction'])
             cursor.execute(insert_sql, insert_sql_tuple)
             try:
@@ -236,3 +238,68 @@ def get_available_stocks():
 
     connection.close()
     return result
+
+
+def get_available_stock_info():
+
+    connection  = db_connect()
+    cursor = connection.cursor()
+
+    # Execute query
+    query_sql = """SELECT stock_code, name, first_record_date, last_record_date
+                   FROM stock"""
+    cursor.execute(query_sql)
+    result = cursor.fetchall()
+
+    connection.close()
+    return result
+
+
+def update_stock_info():
+
+    connection  = db_connect()
+    cursor = connection.cursor()
+    query_sql = """SELECT stock_code FROM stock"""
+    cursor.execute(query_sql)
+    result = cursor.fetchall()
+
+    if result:
+        for code in result:
+            query_sql = """
+                SELECT MIN(date), MAX(date)
+                FROM stock_history
+                WHERE stock_history.stock_code = ?"""
+            cursor.execute(query_sql, code)
+            result = cursor.fetchone()
+
+            update_sql = """
+                UPDATE stock
+                SET first_record_date = ?,
+                    last_record_date = ?
+                WHERE stock.stock_code = ?"""
+            sql_tuple = (result[0], result[1], code[0])
+            cursor.execute(update_sql, sql_tuple)
+            connection.commit()
+
+    connection.close()
+
+
+def insert_new_data(stock_code, year_data):
+
+    connection = db_connect()
+    cursor = connection.cursor()
+    for index, day_data in year_data.iterrows():
+        print(index, day_data)
+        insert_sql = """ INSERT OR IGNORE INTO stock_history (stock_code, date, capacity, turnover, open, high, low, close, change, transactions)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+        insert_sql_tuple = (stock_code, day_data['date'], day_data['capacity'], day_data['turnover'],
+                            day_data['open'], day_data['high'], day_data['low'], day_data['close'],
+                            day_data['change'], day_data['transaction'])
+        cursor.execute(insert_sql, insert_sql_tuple)
+        try:
+            connection.commit()
+        except:
+            print('error', index)
+            break
+
+    connection.close()

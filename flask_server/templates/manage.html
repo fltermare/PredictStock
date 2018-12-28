@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <div class="jumbotron text-center">
+        <h1>About Me</h1>
+        <p class="lead">This application is built on the Python Flask framework and is the focus for the "Python Flask From Scratch" YouTube series</p>
+    </div>
+    <table class="table table-striped">
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>First Record Date</th>
+            <th>Last Record Date</th>
+            <th></th>
+        </tr>
+        {% for stock_code, stock_name, first_date, last_date in stock_info %}
+            <tr>
+                <td>{{stock_code}}</td>
+                <td>{{stock_name}}</td>
+                <td>{{first_date}}</td>
+                <td>{{last_date}}</td>
+                <td>
+                    <form action="{{url_for('fetch', stock_code=stock_code, last_date=last_date)}}" method="POST">
+                        <input type="hidden" name="_method" value="FETCH">
+                        <input type="submit" value="Update" class="btn btn-success">
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

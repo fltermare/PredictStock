@@ -10,10 +10,11 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
 
+from core.fetch_data import get_new_data
 from core.training import train_model
 from core.predict import stock_predict
 from core.db import db_register, db_user_login
-from core.db import LoginException, get_available_stocks
+from core.db import LoginException, get_available_stocks, get_available_stock_info, update_stock_info
 from core import dash_app
 from datetime import datetime
 
@@ -92,11 +93,6 @@ def index():
     return render_template('home.html')
 
 
-@app.route('/about')
-def about():
-    return render_template('about.html')
-
-
 ### Register Form Class
 class RegisterForm(Form):
     username = StringField('Username', [validators.Length(min=3, max=25)])
@@ -110,7 +106,7 @@ class RegisterForm(Form):
 
 
 ### User Register
-@app.route('/register', methods=['Get', 'Post'])
+@app.route('/register', methods=['Get', 'POST'])
 def register():
     form = RegisterForm(request.form)
     if request.method == 'POST' and form.validate():
@@ -223,6 +219,29 @@ def dashboard():
             return render_template('dashboard.html', prediction=prediction, dash_url=dash_url, stock_code_name=stock_code_name)
 
     return render_template('dashboard.html', dash_url=dash_url, stock_code_name=stock_code_name)
+
+
+### Show Stock Info
+@app.route('/manage')
+@is_logged_in
+def manage():
+
+    stock_info = get_available_stock_info()
+    #update_stock_info()
+
+    return render_template('manage.html', stock_info=stock_info)
+
+
+### Fetch New Stock Price Data
+@app.route('/fetch/<string:stock_code>/<string:last_date>', methods=['Post'])
+@is_logged_in
+def fetch(stock_code, last_date):
+
+    get_new_data(stock_code, last_date)
+    update_stock_info()
+
+    flash('Update', 'success')
+    return redirect(url_for('manage'))
 
 
 def main():
