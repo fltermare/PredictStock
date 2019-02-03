@@ -239,6 +239,8 @@ def fetch(stock_code, last_date):
 
     get_new_data(stock_code, last_date)
     update_stock_info()
+    #import time
+    #time.sleep(10)
 
     flash('Update', 'success')
     return redirect(url_for('manage'))
