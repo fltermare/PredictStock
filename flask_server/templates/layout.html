@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>PredictStockPrice</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 </head>
 
 <body>
@@ -13,8 +13,11 @@
         {% include 'includes/_messages.html' %}
         {% block body %}{% endblock %}
     </div>
-
+    <!---->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='js/Loading-Spinner-Sprite-Animation-jQuery-Preloaders/jquery.preloaders.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/myscript.js') }}"></script>
 </body>
 
 </html>

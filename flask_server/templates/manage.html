@@ -1,0 +1,38 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <div class="jumbotron text-center">
+        <!--
+        <h1>About Me</h1>
+        <p class="lead">blablabla</p>
+        -->
+    </div>
+    <table class="table table-striped">
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>First Record Date</th>
+            <th>Last Record Date</th>
+            <th></th>
+        </tr>
+        {% for stock_code, stock_name, first_date, last_date in stock_info %}
+            <tr>
+                <td>{{stock_code}}</td>
+                <td>{{stock_name}}</td>
+                <td>{{first_date}}</td>
+                <td>{{last_date}}</td>
+                <td>
+                    <div class="container text-center">
+                    <form action="{{url_for('fetch', stock_code=stock_code, last_date=last_date)}}" method="POST">
+                        <input type="hidden" name="_method" value="FETCH">
+                        <button type="submit" class="btn btn-primary example2">Update</button>
+                        <!--
+                        <input type="submit" value="Update" class="btn btn-success">
+                        -->
+                    </form>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
