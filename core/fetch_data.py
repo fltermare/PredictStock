@@ -4,7 +4,7 @@ import time
 import datetime
 import os
 import pandas as pd
-from core.db import insert_new_data
+from core.db import insert_new_data, update_stock_info
 from pathlib import Path
 
 def stock2df(stock_m):
@@ -134,3 +134,5 @@ def get_new_data(stock_code, last_date):
             stock_year_df = load_stock_year_csv(stock_code, year)
             updated_df = pd.concat([stock_year_df, updated_df]).reset_index(drop=True).drop_duplicates()
         dataframe2csv(stock_code, year, updated_df)
+
+    update_stock_info()

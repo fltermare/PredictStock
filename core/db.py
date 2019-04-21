@@ -171,6 +171,8 @@ def dump2db(history_path=DEFAULT_HISTORY_PATH):
         for year_data_file in data_files:          
             #continue
             store_year_data(stock_code, year_data_file)
+    # Update
+    update_stock_info()
 
 
 def db_init_user_table():
