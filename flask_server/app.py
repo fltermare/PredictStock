@@ -14,7 +14,7 @@ from core.fetch_data import get_new_data
 from core.training import train_model
 from core.predict import stock_predict
 from core.db import db_register, db_user_login
-from core.db import LoginException, get_available_stocks, get_available_stock_info, update_stock_info
+from core.db import LoginException, get_available_stocks, get_available_stock_info
 from core import dash_app
 from datetime import datetime
 
@@ -227,7 +227,6 @@ def dashboard():
 def manage():
 
     stock_info = get_available_stock_info()
-    #update_stock_info()
 
     return render_template('manage.html', stock_info=stock_info)
 
@@ -238,7 +237,6 @@ def manage():
 def fetch(stock_code, last_date):
 
     get_new_data(stock_code, last_date)
-    update_stock_info()
     #import time
     #time.sleep(10)
 
@@ -246,13 +244,12 @@ def fetch(stock_code, last_date):
     return redirect(url_for('manage'))
 
 
-def main():
-    #train_model()
+def run_server():
+
     load_ml_model()
-    #stock_predict(model, '2834', '2018-08-03')
-    #return
+
     print((" * Loading Keras model and Flask starting server..."
            "please wait until server has fully started"))
 
     app.secret_key = "secret123"
-    app.run(debug=True)
+    app.run(debug=False)

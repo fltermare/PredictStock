@@ -3,6 +3,7 @@
 import config
 import datetime
 import glob
+import os
 import pandas as pd
 import sqlite3
 import twstock
@@ -12,7 +13,33 @@ DEFAULT_HISTORY_PATH = config.STOCK_HISTORY_PATH
 DEFAULT_DB_PATH = config.DB_PATH
 
 
+def db_check_exist():
+    """ check database exists"""
+
+    if os.path.isfile(DEFAULT_DB_PATH):
+        print('[!] Database already exists')
+        query = input("Do you want to doNothing/Overwrite/Backup ([n]/o/b) ? ").lower()
+        if query == 'o':
+            # Overwrite
+            os.remove(DEFAULT_DB_PATH)
+        elif query == 'b':
+            # Backup original database
+            from time import gmtime, strftime
+            timestamp = strftime("%Y%m%d_%H%M", gmtime())
+            renamed_db = DEFAULT_DB_PATH + "." + timestamp
+            os.rename(DEFAULT_DB_PATH, renamed_db)
+        else:
+            # Do nothing
+            return True
+
+    return False
+
+
 def db_init():
+
+    if db_check_exist():
+        return
+
     connection = db_connect()
     cursor = connection.cursor()
     cursor.execute('PRAGMA foreign_keys = ON')
@@ -56,6 +83,9 @@ def db_init():
     #cursor.execute(insert_test_sql, task_2)
     connection.commit()
     connection.close()
+
+    db_init_user_table()
+    dump2db()
 
 
 def db_connect(db_path=DEFAULT_DB_PATH):
@@ -141,6 +171,8 @@ def dump2db(history_path=DEFAULT_HISTORY_PATH):
         for year_data_file in data_files:          
             #continue
             store_year_data(stock_code, year_data_file)
+    # Update
+    update_stock_info()
 
 
 def db_init_user_table():
