@@ -15,7 +15,6 @@ from core.training import train_model
 from core.predict import stock_predict
 from core.db import db_register, db_user_login
 from core.db import LoginException, get_available_stocks, get_available_stock_info, update_stock_info
-from core.my_utils import get_opt
 from core import dash_app
 from datetime import datetime
 
@@ -247,13 +246,7 @@ def fetch(stock_code, last_date):
     return redirect(url_for('manage'))
 
 
-def main():
-
-    args = get_opt()
-    if args.init:
-        print("init")
-    if args.dump:
-        print("dump")
+def run_server():
 
     load_ml_model()
 
@@ -261,4 +254,4 @@ def main():
            "please wait until server has fully started"))
 
     app.secret_key = "secret123"
-    app.run(debug=True)
+    app.run(debug=False)
