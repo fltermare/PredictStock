@@ -222,11 +222,18 @@ def dashboard():
 
 
 ### Show Stock Info
-@app.route('/manage')
+@app.route('/manage', methods=["GET", "POST"])
 @is_logged_in
 def manage():
 
     stock_info = get_available_stock_info()
+
+    if request.method == "POST":
+        print('--------------')
+        print(request.form['stock_code'])
+        print(request.form['first_date'])
+        print(request.form['last_date'])
+        print('--------------')
 
     return render_template('manage.html', stock_info=stock_info)
 
@@ -252,4 +259,4 @@ def run_server():
            "please wait until server has fully started"))
 
     app.secret_key = "secret123"
-    app.run(debug=False)
+    app.run(debug=True)

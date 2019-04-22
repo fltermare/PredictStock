@@ -7,6 +7,24 @@
         <p class="lead">blablabla</p>
         -->
     </div>
+
+    <form action="" method="POST">
+        <div class="form-row">
+            <label for="stock_code" class="col-sm-2 col-form-label">Stock Code:</label>
+            <input type="text" name="stock_code" class="form-control col-sm-6" value={{request.form.stock_code}}>
+        </div>
+        <div class="form-row">
+            <label for="first_date" class="col-sm-2 col-form-label">First Date</label>
+            <input type="date" name="first_date" class="form-control col-sm-6" value={{request.form.first_date}}>
+        </div>
+        <div class="form-row">
+            <label for="last_date" class="col-sm-2 col-form-label">Last Date</label>
+            <input type="date" name="last_date" class="form-control col-sm-6" value={{request.form.last_date}}>
+        </div>
+        <button type="submit" class="btn btn-primary">Add</button>
+    </form>
+    <br>
+
     <table class="table table-striped">
         <tr>
             <th>Code</th>
@@ -25,7 +43,7 @@
                     <div class="container text-center">
                     <form action="{{url_for('fetch', stock_code=stock_code, last_date=last_date)}}" method="POST">
                         <input type="hidden" name="_method" value="FETCH">
-                        <button type="submit" class="btn btn-primary example2">Update</button>
+                        <button type="submit" class="btn btn-success example2">Update</button>
                         <!--
                         <input type="submit" value="Update" class="btn btn-success">
                         -->
