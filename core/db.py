@@ -321,7 +321,7 @@ def insert_new_data(stock_code, year_data):
     connection = db_connect()
     cursor = connection.cursor()
     for index, day_data in year_data.iterrows():
-        print(index, day_data)
+        #print(index, day_data)
         insert_sql = """ INSERT OR IGNORE INTO stock_history (stock_code, date, capacity, turnover, open, high, low, close, change, transactions)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
         insert_sql_tuple = (stock_code, day_data['date'], day_data['capacity'], day_data['turnover'],

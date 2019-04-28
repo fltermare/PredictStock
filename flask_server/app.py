@@ -231,8 +231,8 @@ def manage():
     if request.method == "POST":
         print('--------------')
         print(request.form['stock_code'])
-        print(request.form['first_date'])
-        print(request.form['last_date'])
+        print(request.form['first_month'])
+        print(request.form['last_month'])
         print('--------------')
 
     return render_template('manage.html', stock_info=stock_info)
@@ -243,11 +243,12 @@ def manage():
 @is_logged_in
 def fetch(stock_code, last_date):
 
-    get_new_data(stock_code, last_date)
-    #import time
-    #time.sleep(10)
+    try:
+        get_new_data(stock_code, last_date)
+        flash('Update', 'success')
+    except Exception as e:
+        flash('Update Failed' + e, 'danger')
 
-    flash('Update', 'success')
     return redirect(url_for('manage'))
 
 
