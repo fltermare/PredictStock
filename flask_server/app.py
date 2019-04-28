@@ -260,4 +260,4 @@ def run_server():
            "please wait until server has fully started"))
 
     app.secret_key = "secret123"
-    app.run(debug=True)
+    app.run(debug=False)
