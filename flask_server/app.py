@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import configparser
-import config
 import dash
 import io
 import tensorflow as tf
@@ -29,10 +28,14 @@ configuration = tf.ConfigProto()
 configuration.gpu_options.per_process_gpu_memory_fraction = 0.3
 set_session(tf.Session(config=configuration))
 
+CONFIG = configparser.ConfigParser()
+CONFIG.read('config.ini')
+ML_MODLE_PATH = str(CONFIG['COMMON']['ML_MODLE_PATH'])
+
 
 def load_ml_model():
     global model, graph
-    model = load_model(config.ML_MODLE_PATH)
+    model = load_model(ML_MODLE_PATH)
     graph = tf.get_default_graph()
 
 
@@ -231,8 +234,8 @@ def manage():
     if request.method == "POST":
         print('--------------')
         print(request.form['stock_code'])
-        print(request.form['first_date'])
-        print(request.form['last_date'])
+        print(request.form['first_month'])
+        print(request.form['last_month'])
         print('--------------')
 
     return render_template('manage.html', stock_info=stock_info)
@@ -243,11 +246,12 @@ def manage():
 @is_logged_in
 def fetch(stock_code, last_date):
 
-    get_new_data(stock_code, last_date)
-    #import time
-    #time.sleep(10)
+    try:
+        get_new_data(stock_code, last_date)
+        flash('Update', 'success')
+    except Exception as e:
+        flash('Update Failed' + e, 'danger')
 
-    flash('Update', 'success')
     return redirect(url_for('manage'))
 
 
@@ -259,4 +263,4 @@ def run_server():
            "please wait until server has fully started"))
 
     app.secret_key = "secret123"
-    app.run(debug=True)
+    app.run(debug=False)

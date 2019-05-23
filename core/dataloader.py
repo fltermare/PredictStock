@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import config
+import configparser
+#import config
 import datetime
 import random
 import numpy as np
@@ -9,8 +10,14 @@ from core.db import db_connect
 from sklearn import preprocessing
 from keras.utils import Sequence
 
+CONFIG = configparser.ConfigParser()
+CONFIG.read('config.ini')
+SEQ_LEN = int(CONFIG['ML']['SEQ_LEN'])
+SCALERS_DIR_PATH = str(CONFIG['COMMON']['SCALERS_DIR_PATH'])
+
+
 class DataLoader():
-    def __init__(self, stock_codes=[], seq_len=config.SEQ_LEN, is_train=True):
+    def __init__(self, stock_codes=[], seq_len=SEQ_LEN, is_train=True):
         self.seq_len, self.is_train = seq_len, is_train
         self.scalers = dict()
         self.stock_codes = [str(x) for x in stock_codes if x.isdigit()]
@@ -71,7 +78,7 @@ class DataLoader():
         if self.is_train:
             self.gen_scaler(stock_code, df[normalize_columns])
         else:
-            self.scalers[stock_code] = pickle.load(open(config.SCALERS_DIR_PATH+stock_code+".scaler", "rb"))
+            self.scalers[stock_code] = pickle.load(open(SCALERS_DIR_PATH+stock_code+".scaler", "rb"))
 
         df[['ori_close', 'ori_change']] = df[['close', 'change']]
         df[normalize_columns] = self.scalers[stock_code].transform(df[normalize_columns])
@@ -88,7 +95,7 @@ class DataLoader():
         scaler = preprocessing.MaxAbsScaler().fit(parts_df.values)
         parts_df= pd.DataFrame(scaler.transform(parts_df))
         self.scalers[stock_code] = scaler
-        pickle.dump(scaler, open(config.SCALERS_DIR_PATH+stock_code+".scaler", "wb"))
+        pickle.dump(scaler, open(SCALERS_DIR_PATH+stock_code+".scaler", "wb"))
 
     def get_shape(self):
         return (self.seq_len, 10)
@@ -145,7 +152,7 @@ class DataGenerator(Sequence):
 
 
 class PredictGenerator(Sequence, DataLoader):
-    def __init__(self, stock_code, predict_date, seq_len=config.SEQ_LEN):
+    def __init__(self, stock_code, predict_date, seq_len=SEQ_LEN):
         self.seq_len, self.is_train = seq_len, False
         self.scalers = dict()
         self.stock_codes = [str(x) for x in [stock_code] if x.isdigit()]

@@ -1,9 +1,14 @@
-import config
+import configparser
 from core.dataloader import DataLoader, DataGenerator
 from keras.models import Model
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Input, Flatten, BatchNormalization, Activation, Dense
 from keras.layers import Bidirectional, LSTM
+
+CONFIG = configparser.ConfigParser()
+CONFIG.read('config.ini')
+SEQ_LEN = int(CONFIG['ML']['SEQ_LEN'])
+ML_MODLE_PATH = str(CONFIG['COMMON']['ML_MODLE_PATH'])
 
 
 def RNN(input_shape, neuron=10, n_layers=3):
@@ -24,14 +29,14 @@ def RNN(input_shape, neuron=10, n_layers=3):
 
 def train_model():
     stock_codes = ['2834', '5880', '2892']
-    dataloader = DataLoader(stock_codes=stock_codes, seq_len=config.SEQ_LEN)
+    dataloader = DataLoader(stock_codes=stock_codes, seq_len=SEQ_LEN)
     train_generator = DataGenerator(dataloader, batch_size=5, mode='train')
     val_generator = DataGenerator(dataloader, batch_size=5, mode='valid')
 
     model = RNN(dataloader.get_shape())
     model.summary()
     early_stop = EarlyStopping(monitor='val_loss', patience=10)
-    checkpointer = ModelCheckpoint(filepath=config.ML_MODLE_PATH, verbose=0, save_best_only=True)
+    checkpointer = ModelCheckpoint(filepath=ML_MODLE_PATH, verbose=0, save_best_only=True)
     model.fit_generator(
         generator=train_generator,
         validation_data=val_generator,
