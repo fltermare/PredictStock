@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import configparser
-import config
 import dash
 import io
 import tensorflow as tf
@@ -29,10 +28,14 @@ configuration = tf.ConfigProto()
 configuration.gpu_options.per_process_gpu_memory_fraction = 0.3
 set_session(tf.Session(config=configuration))
 
+CONFIG = configparser.ConfigParser()
+CONFIG.read('config.ini')
+ML_MODLE_PATH = str(CONFIG['COMMON']['ML_MODLE_PATH'])
+
 
 def load_ml_model():
     global model, graph
-    model = load_model(config.ML_MODLE_PATH)
+    model = load_model(ML_MODLE_PATH)
     graph = tf.get_default_graph()
 
 

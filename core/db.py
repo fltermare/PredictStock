@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import config
+import configparser
 import datetime
 import glob
 import os
@@ -9,8 +9,10 @@ import sqlite3
 import twstock
 from passlib.hash import sha256_crypt
 
-DEFAULT_HISTORY_PATH = config.STOCK_HISTORY_PATH
-DEFAULT_DB_PATH = config.DB_PATH
+CONFIG = configparser.ConfigParser()
+CONFIG.read('config.ini')
+DEFAULT_HISTORY_PATH = str(CONFIG['COMMON']['STOCK_HISTORY_PATH'])
+DEFAULT_DB_PATH = str(CONFIG['COMMON']['DB_PATH'])
 
 
 def db_check_exist():
