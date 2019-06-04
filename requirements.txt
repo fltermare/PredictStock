@@ -19,7 +19,7 @@ chardet==3.0.4
 Click==7.0
 colorama==0.4.1
 configparser==3.5.0
-croniter==0.3.27
+croniter==0.3.28
 cryptography==2.3.1
 dash==0.31.0
 dash-core-components==0.40.0
