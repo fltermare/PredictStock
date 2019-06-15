@@ -13,7 +13,7 @@ from core.fetch_data import get_new_data
 from core.training import train_model
 from core.predict import stock_predict
 from core.db import db_register, db_user_login
-from core.db import LoginException, get_available_stocks, get_available_stock_info
+from core.db import LoginException, get_available_stocks, get_available_stock_info, add_new_stock, delete_stock
 from core import dash_app
 from datetime import datetime
 
@@ -229,14 +229,15 @@ def dashboard():
 @is_logged_in
 def manage():
 
-    stock_info = get_available_stock_info()
-
     if request.method == "POST":
         print('--------------')
-        print(request.form['stock_code'])
-        print(request.form['first_month'])
-        print(request.form['last_month'])
+        add_new_stock(request.form['stock_code'], request.form['first_month'])
+        #print(request.form['stock_code'])
+        #print(request.form['first_month'])
+        #print(request.form['last_month'])
         print('--------------')
+
+    stock_info = get_available_stock_info()
 
     return render_template('manage.html', stock_info=stock_info)
 
@@ -247,10 +248,11 @@ def manage():
 def fetch(stock_code, last_date):
 
     try:
-        get_new_data(stock_code, last_date)
-        flash('Update', 'success')
+        delete_stock(stock_code)
+        #get_new_data(stock_code, last_date)
+        flash('Delete', 'success')
     except Exception as e:
-        flash('Update Failed' + e, 'danger')
+        flash('Delete Failed' + e, 'danger')
 
     return redirect(url_for('manage'))
 

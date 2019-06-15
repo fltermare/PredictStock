@@ -103,7 +103,8 @@ def load_stock_year_csv(stock_code, year):
 
 
 def get_new_data(stock_code, last_date):
-
+    return
+    ###########
     stock = twstock.Stock(stock_code)
     today = datetime.datetime.today()
     last_date = datetime.datetime.strptime(last_date, "%Y-%m-%d")

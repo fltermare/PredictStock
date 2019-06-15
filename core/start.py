@@ -20,6 +20,7 @@ class MyPrompt(Cmd):
 def entry():
     args = get_opt()
     set_airflow_env()
+
     if args.init:
         db_init()
         init_airflow_db()

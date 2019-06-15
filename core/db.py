@@ -7,12 +7,14 @@ import os
 import pandas as pd
 import sqlite3
 import twstock
+from core.airflow_cmd import backfill_dag
 from passlib.hash import sha256_crypt
 
 CONFIG = configparser.ConfigParser()
 CONFIG.read('config.ini')
 DEFAULT_HISTORY_PATH = str(CONFIG['COMMON']['STOCK_HISTORY_PATH'])
 DEFAULT_DB_PATH = str(CONFIG['COMMON']['DB_PATH'])
+MAIN_DAG = str(CONFIG['AIRFLOW']['MAIN_DAG'])
 
 
 def db_check_exist():
@@ -287,6 +289,47 @@ def get_available_stock_info():
 
     connection.close()
     return result
+
+
+def add_new_stock(stock_code, start_date):
+
+    connection  = db_connect()
+    cursor = connection.cursor()
+
+    stock = twstock.realtime.get(stock_code)
+    stock_name = stock['info']['name']
+    start_date = datetime.datetime.strptime(start_date, '%Y-%m')
+
+    insert_sql = """ INSERT or REPLACE INTO stock (stock_code, name, first_record_date, last_record_date)
+                            VALUES (?, ?, ?, ?)"""
+    insert_sql_tuple = (stock_code, stock_name, start_date.strftime('%Y-%m-%d'), start_date.strftime('%Y-%m-%d'))
+    cursor.execute(insert_sql, insert_sql_tuple)
+    connection.commit()
+
+    backfill_dag(MAIN_DAG, start_date.strftime('%Y-%m-%d'), datetime.datetime.strftime(datetime.datetime.today(), "%Y-%m-%d"))
+
+
+def delete_stock(stock_code):
+    def _delete_frome_stock_history():
+        delete_sql = """DELETE
+                    FROM stock_history
+                    WHERE stock_code = ?"""
+        delete_sql_tuple = (stock_code,)
+        cursor.execute(delete_sql, delete_sql_tuple)
+
+    def _delete_from_stock():
+        delete_sql = """DELETE
+                    FROM stock
+                    WHERE stock_code = ?"""
+        delete_sql_tuple = (stock_code,)
+        cursor.execute(delete_sql, delete_sql_tuple)
+
+    connection  = db_connect()
+    cursor = connection.cursor()
+    _delete_from_stock()
+    _delete_frome_stock_history()
+    connection.commit()
+
 
 
 def update_stock_info():

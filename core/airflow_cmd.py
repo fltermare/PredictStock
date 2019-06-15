@@ -19,6 +19,10 @@ def init_airflow_db():
     subprocess.Popen(["airflow", "initdb"])
 
 
+def backfill_dag(dag_id: str, start_time: str, end_time: str):
+    subprocess.Popen(["airflow", "backfill", "-s", start_time, "-e", end_time, dag_id])
+
+
 def start_airflow():
 
     print('[airflow] started')

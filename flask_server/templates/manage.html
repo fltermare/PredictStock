@@ -17,10 +17,6 @@
             <label for="first_month" class="col-sm-2 col-form-label">First Month</label>
             <input type="month" name="first_month" class="form-control col-sm-6" value={{request.form.first_month}}>
         </div>
-        <div class="form-row">
-            <label for="last_month" class="col-sm-2 col-form-label">Last Month</label>
-            <input type="month" name="last_month" class="form-control col-sm-6" value={{request.form.last_month}}>
-        </div>
         <button type="submit" class="btn btn-primary">Add</button>
     </form>
     <br>
@@ -42,12 +38,16 @@
                 <td>
                     <div class="container text-center">
                     <form action="{{url_for('fetch', stock_code=stock_code, last_date=last_date)}}" method="POST">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" class="btn btn-danger example2">DELETE</button>
+                    </form>
+                    <!--
+                    <form action="{{url_for('fetch', stock_code=stock_code, last_date=last_date)}}" method="POST">
                         <input type="hidden" name="_method" value="FETCH">
                         <button type="submit" class="btn btn-success example2">Update</button>
-                        <!--
                         <input type="submit" value="Update" class="btn btn-success">
-                        -->
                     </form>
+                    -->
                     </div>
                 </td>
             </tr>
