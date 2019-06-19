@@ -110,7 +110,8 @@ def day_check_dag(parent_dag_name, child_dag_name, start_date, schedule_interval
 
 
 
-    day_check_operator >> fetch_stock_operator >> [update_db_operator, save2disk_operator] >> done
+    #day_check_operator >> fetch_stock_operator >> [update_db_operator, save2disk_operator] >> done
+    day_check_operator >> fetch_stock_operator >> [update_db_operator, save2disk_operator]
     day_check_operator >> done
 
     return dag

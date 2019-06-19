@@ -4,6 +4,7 @@ from flask_server.app import run_server
 from core.db import db_init, dump2db
 from core.airflow_cmd import set_airflow_env, init_airflow_db, start_airflow
 from core.my_utils import get_opt
+from core.training import train_model
 
 
 class MyPrompt(Cmd):
@@ -24,6 +25,9 @@ def entry():
     if args.init:
         db_init()
         init_airflow_db()
+
+    if args.train:
+        train_model()
 
     if args.update:
         start_airflow()

@@ -22,8 +22,8 @@ SUB_DAG = "day_check_dag"
 
 default_args = {
     'owner': 'user',
-    'retries': 2,
-    'retry_delay': timedelta(minutes=1)
+    'retries': 1,
+    'retry_delay': timedelta(seconds=10)
 }
 
 
@@ -58,13 +58,14 @@ main_dag = DAG(
     schedule_interval=timedelta(days=1)
 )
 
-
+#"""
 update_stock_info_operator = PythonOperator(
     task_id='update_stock_info',
     python_callable=update_stock_info,
     op_args=[DB_PATH],
     dag=main_dag,
 )
+#"""
 
 for stock_code, start_record, last_record in stock_list:
 
@@ -78,4 +79,5 @@ for stock_code, start_record, last_record in stock_list:
     )
 
     day_check_subdag >> update_stock_info_operator
+    #day_check_subdag
     #"""
