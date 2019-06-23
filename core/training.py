@@ -1,5 +1,6 @@
 import configparser
 from core.dataloader import DataLoader, DataGenerator
+from core.db import get_available_stocks
 from keras.models import Model
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.layers import Input, Flatten, BatchNormalization, Activation, Dense
@@ -28,7 +29,8 @@ def RNN(input_shape, neuron=10, n_layers=3):
 
 
 def train_model():
-    stock_codes = ['2834', '5880', '2892']
+
+    stock_codes = [str(x[0]) for x in get_available_stocks()]
     dataloader = DataLoader(stock_codes=stock_codes, seq_len=SEQ_LEN)
     train_generator = DataGenerator(dataloader, batch_size=5, mode='train')
     val_generator = DataGenerator(dataloader, batch_size=5, mode='valid')
