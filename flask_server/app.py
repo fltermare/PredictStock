@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import configparser
-import config
 import dash
 import io
 import tensorflow as tf
@@ -14,7 +13,7 @@ from core.fetch_data import get_new_data
 from core.training import train_model
 from core.predict import stock_predict
 from core.db import db_register, db_user_login
-from core.db import LoginException, get_available_stocks, get_available_stock_info
+from core.db import LoginException, get_available_stocks, get_available_stock_info, add_new_stock, delete_stock
 from core import dash_app
 from datetime import datetime
 
@@ -29,10 +28,14 @@ configuration = tf.ConfigProto()
 configuration.gpu_options.per_process_gpu_memory_fraction = 0.3
 set_session(tf.Session(config=configuration))
 
+CONFIG = configparser.ConfigParser()
+CONFIG.read('config.ini')
+ML_MODLE_PATH = str(CONFIG['COMMON']['ML_MODLE_PATH'])
+
 
 def load_ml_model():
     global model, graph
-    model = load_model(config.ML_MODLE_PATH)
+    model = load_model(ML_MODLE_PATH)
     graph = tf.get_default_graph()
 
 
@@ -222,9 +225,17 @@ def dashboard():
 
 
 ### Show Stock Info
-@app.route('/manage')
+@app.route('/manage', methods=["GET", "POST"])
 @is_logged_in
 def manage():
+
+    if request.method == "POST":
+        print('--------------')
+        add_new_stock(request.form['stock_code'], request.form['first_month'])
+        #print(request.form['stock_code'])
+        #print(request.form['first_month'])
+        #print(request.form['last_month'])
+        print('--------------')
 
     stock_info = get_available_stock_info()
 
@@ -236,11 +247,13 @@ def manage():
 @is_logged_in
 def fetch(stock_code, last_date):
 
-    get_new_data(stock_code, last_date)
-    #import time
-    #time.sleep(10)
+    try:
+        delete_stock(stock_code)
+        #get_new_data(stock_code, last_date)
+        flash('Delete', 'success')
+    except Exception as e:
+        flash('Delete Failed' + e, 'danger')
 
-    flash('Update', 'success')
     return redirect(url_for('manage'))
 
 

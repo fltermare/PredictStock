@@ -10,6 +10,7 @@ from pathlib import Path
 def stock2df(stock_m):
     """
     parse stock object and turn into dataframe
+
     `Args`
         stock_m: stock object including 1 month infomation
     `Returns`
@@ -43,12 +44,13 @@ def check_exist(stock_code, year, update=False):
         return csv_path.exists()
     
     
-def stock_history(stock_code='2330', years=[2018]):
+def get_stock_year_history(stock_code='2330', years=[2018]):
     """
     get specific stock history and save it
+
     `Args`
         stock_code: code of target stock
-        years: a list of interested years 
+        years: a list of interested years
     `Return`
         history_result: a dataframe of a stock's history
     """
@@ -101,7 +103,8 @@ def load_stock_year_csv(stock_code, year):
 
 
 def get_new_data(stock_code, last_date):
-
+    return
+    ###########
     stock = twstock.Stock(stock_code)
     today = datetime.datetime.today()
     last_date = datetime.datetime.strptime(last_date, "%Y-%m-%d")
