@@ -20,7 +20,26 @@ def init_airflow_db():
 
 
 def backfill_dag(dag_id: str, start_time: str, end_time: str):
-    subprocess.Popen(["airflow", "backfill", "-s", start_time, "-e", end_time, dag_id])
+
+    subprocess.Popen(["airflow", "backfill", "-l", "-x", "-B", "-s", start_time, "-e", end_time, dag_id])
+
+
+def unpause_stock_dag(dag_id: str):
+    subprocess.call(["airflow", "unpause", dag_id])
+
+
+def remove_stock_dag(dag_id: str):
+    subprocess.call(["airflow", "delete_dag", "-y", dag_id])
+
+
+def clear_dag(dag_id: str, start_time: str, end_time: str, flag: bool):
+    if flag:
+        subprocess.call(["airflow", "clear", "--no_confirm", dag_id])
+    else:
+        subprocess.call(["airflow", "backfill", "--mark_success", "-s", start_time, "-e", end_time, "stock_update_dag"])
+    #proc.poll()
+    #subprocess.Popen(["airflow", "delete_dag", "-y", dag_id])
+
 
 
 def start_airflow():

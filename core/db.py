@@ -7,7 +7,8 @@ import os
 import pandas as pd
 import sqlite3
 import twstock
-from core.airflow_cmd import backfill_dag
+import subprocess
+from core.airflow_cmd import backfill_dag, clear_dag, unpause_stock_dag, remove_stock_dag
 from passlib.hash import sha256_crypt
 
 CONFIG = configparser.ConfigParser()
@@ -15,6 +16,8 @@ CONFIG.read('config.ini')
 DEFAULT_HISTORY_PATH = str(CONFIG['COMMON']['STOCK_HISTORY_PATH'])
 DEFAULT_DB_PATH = str(CONFIG['COMMON']['DB_PATH'])
 MAIN_DAG = str(CONFIG['AIRFLOW']['MAIN_DAG'])
+DAG_FILE_NAME = "update_stock_{}.py"
+DAG_NAME_FORMAT = "{}_stock_update"
 
 
 def db_check_exist():
@@ -291,6 +294,29 @@ def get_available_stock_info():
     return result
 
 
+def gen_start_dag(stock_code_list):
+
+    def _create_dag(dag_path, base_dag_path):
+        subprocess.call(["cp", base_dag_path, dag_path])
+        subprocess.call(["sed", "-i", "s/SHOULD_BE_STOCK_CODE/{}/g".format(stock_code), dag_path])
+
+
+    stock_code_list = (x[0] for x in stock_code_list)
+    airflow_dir = os.environ['AIRFLOW_HOME']
+
+    for stock_code in stock_code_list:
+        dag_path = '/'.join([airflow_dir, 'dags', DAG_FILE_NAME.format(stock_code)])
+        base_dag_path = '/'.join([airflow_dir, 'dags', 'update_stock_base'])
+        if not os.path.isfile(dag_path):
+            _create_dag(dag_path, base_dag_path)
+
+        # Difference between stock_dag and base_dag
+        diff_proc = subprocess.Popen(["diff", dag_path, base_dag_path], stdout=subprocess.PIPE)
+        diff_output = subprocess.check_output(['wc', '-l'], stdin=diff_proc.stdout).decode()
+        if str(4) not in diff_output:
+            _create_dag(dag_path, base_dag_path)
+
+
 def add_new_stock(stock_code, start_date):
 
     connection  = db_connect()
@@ -306,7 +332,15 @@ def add_new_stock(stock_code, start_date):
     cursor.execute(insert_sql, insert_sql_tuple)
     connection.commit()
 
-    backfill_dag(MAIN_DAG, start_date.strftime('%Y-%m-%d'), datetime.datetime.strftime(datetime.datetime.today(), "%Y-%m-%d"))
+    query_sql = """SELECT stock_code FROM stock"""
+    cursor.execute(query_sql)
+    stock_code_list = cursor.fetchall()
+    connection.close()
+
+    gen_start_dag(stock_code_list)
+
+    backfill_end_time = datetime.date.today() - datetime.timedelta(days = 2)
+    backfill_dag(DAG_NAME_FORMAT.format(stock_code), start_date.strftime('%Y-%m-%d'), datetime.datetime.strftime(backfill_end_time, "%Y-%m-%d"))
 
 
 def delete_stock(stock_code):
@@ -324,10 +358,46 @@ def delete_stock(stock_code):
         delete_sql_tuple = (stock_code,)
         cursor.execute(delete_sql, delete_sql_tuple)
 
+    def _delete_airflow_log():
+        import shutil
+        _ = [os.environ['AIRFLOW_HOME'], 'logs', "{}.day_check_dag_{}".format(MAIN_DAG, stock_code)]
+        airflow_stock_log_dir = "/".join(_)
+        shutil.rmtree(airflow_stock_log_dir, ignore_errors=True)
+        _ = [os.environ['AIRFLOW_HOME'], 'logs', MAIN_DAG, "day_check_dag_{}".format(stock_code)]
+        airflow_stock_log_dir = "/".join(_)
+        shutil.rmtree(airflow_stock_log_dir, ignore_errors=True)
+
+    def _clear_airflow_record(flag):
+        query_sql = """
+                SELECT MIN(date), MAX(date)
+                FROM stock_history
+                """
+        #query_sql_tuple = (stock_code,)
+        #cursor.execute(query_sql, query_sql_tuple)
+        #if first:
+        cursor.execute(query_sql)
+        start_day, last_day = cursor.fetchone()
+        print(start_day, last_day)
+        print(type(start_day), type(last_day))
+        task_id = ".".join([MAIN_DAG, "day_check_dag_%s" % stock_code])
+        clear_dag(task_id, str(start_day), str(last_day), flag)
+
+    def _delete_dag():
+        dag_path = '/'.join([os.environ['AIRFLOW_HOME'], 'dags', DAG_FILE_NAME.format(stock_code)])
+        try:
+            os.remove(dag_path)
+        except OSError:
+            print("{} does not exist".format(dag_path))
+        remove_stock_dag(DAG_NAME_FORMAT.format(stock_code))
+
     connection  = db_connect()
     cursor = connection.cursor()
+    #_clear_airflow_record(flag=True)
     _delete_from_stock()
     _delete_frome_stock_history()
+    _delete_airflow_log()
+    _delete_dag()
+    #_clear_airflow_record(flag=False)
     connection.commit()
 
 

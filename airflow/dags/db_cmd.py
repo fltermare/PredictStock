@@ -1,11 +1,12 @@
 import datetime
 import os
-import pandas as pd
-import requests
-import urllib.parse
 import sqlite3
+import urllib.parse
 from collections import namedtuple
 from pathlib import Path
+
+import pandas as pd
+import requests
 
 try:
     from json.decoder import JSONDecodeError
@@ -78,6 +79,10 @@ def check_stock_day_exist(stock_code, execution_date, db_path):
         print('[check_stock_day_exist.month_record]', execution_date.format("%Y-%m-%d"), result)
         return result
 
+    def _day_off():
+        if execution_date.is_sunday() or execution_date.is_saturday():
+            return True
+
     def _later_than_latest_record():
         query_sql = """
                 SELECT MAX(stock_history.date)
@@ -85,10 +90,13 @@ def check_stock_day_exist(stock_code, execution_date, db_path):
                 WHERE stock_history.stock_code = ?"""
         query_sql_tuple = (stock_code, )
         cursor.execute(query_sql, query_sql_tuple)
-        lastest_day = cursor.fetchone()[0]
+        latest_day = cursor.fetchone()[0]
 
-        lastest_day = datetime.datetime.strptime(lastest_day, '%Y-%m-%d')
-        result = execution_date > lastest_day
+        if latest_day:
+            latest_day = datetime.datetime.strptime(latest_day, '%Y-%m-%d')
+            result = execution_date > latest_day
+        else:
+            result = True
 
         print('[check_stock_day_exist.later_than]', execution_date.format("%Y-%m-%d"), result)
         return result
@@ -97,7 +105,9 @@ def check_stock_day_exist(stock_code, execution_date, db_path):
     cursor = connection.cursor()
 
     ### Check current month
-    if _later_than_latest_record():
+    if _day_off():
+        flag = True
+    elif _later_than_latest_record():
         flag = False
     elif _month_record_exist():
         flag = True
@@ -137,33 +147,31 @@ def load_stock_year_csv(stock_code, year):
     return stock_year_df
 
 
-def update_stock_info(db_path):
+def update_stock_info(stock_code, db_path):
 
     connection  = db_connect(db_path)
     cursor = connection.cursor()
-    query_sql = """SELECT stock_code FROM stock"""
-    cursor.execute(query_sql)
-    result = cursor.fetchall()
+    print("[update_stock_info]", stock_code, type(stock_code))
 
-    if result:
-        for code in result:
-            query_sql = """
-                SELECT MIN(date), MAX(date)
-                FROM stock_history
-                WHERE stock_history.stock_code = ?"""
-            cursor.execute(query_sql, code)
-            result = cursor.fetchone()
+    query_sql = """
+        SELECT MIN(date), MAX(date)
+        FROM stock_history
+        WHERE stock_history.stock_code = ?"""
+    cursor.execute(query_sql, (stock_code,))
+    result = cursor.fetchone()
+    print("[update_stock_info]", result)
 
-            update_sql = """
-                UPDATE stock
-                SET first_record_date = ?,
-                    last_record_date = ?
-                WHERE stock.stock_code = ?"""
-            sql_tuple = (result[0], result[1], code[0])
-            cursor.execute(update_sql, sql_tuple)
-            connection.commit()
+    update_sql = """
+        UPDATE stock
+        SET first_record_date = ?,
+            last_record_date = ?
+        WHERE stock.stock_code = ?"""
+    sql_tuple = (result[0], result[1], stock_code)
+    cursor.execute(update_sql, sql_tuple)
+    connection.commit()
 
     connection.close()
+
 
 
 def save_stock_to_disk(stock_code: int, updated_df, year):
