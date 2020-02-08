@@ -24,9 +24,9 @@ model = None
 graph = None
 CUDA_VISIBLE_DEVICES=1
 from keras.backend.tensorflow_backend import set_session
-configuration = tf.ConfigProto()
+configuration = tf.compat.v1.ConfigProto()
 configuration.gpu_options.per_process_gpu_memory_fraction = 0.3
-set_session(tf.Session(config=configuration))
+set_session(tf.compat.v1.Session(config=configuration))
 
 CONFIG = configparser.ConfigParser()
 CONFIG.read('config.ini')
@@ -185,6 +185,9 @@ def dashboard():
 
     ### dash app
     dash_secret = create_secret(str(datetime.now()).split(':')[0])
+    if not stock_code_name:
+        # database is empty
+        return render_template('home.html')
     dash_url = '/dash?secret={}&stock_code={}'.format(dash_secret, stock_code_name[0][0])
 
     if request.method == 'POST':
