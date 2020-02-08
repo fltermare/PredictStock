@@ -3,7 +3,7 @@ import os
 import time
 from datetime import datetime, timedelta
 
-from airflow import DAG
+# from airflow import DAG
 from airflow.models import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import (BranchPythonOperator,
@@ -23,6 +23,7 @@ MAIN_DAG = str(CONFIG['AIRFLOW']['MAIN_DAG']).format(STOCK_CODE)
 
 default_args = {
     'owner': 'user',
+    'depends_on_past': True,
     'retries': 1,
     'retry_delay': timedelta(seconds=10)
 }
@@ -96,6 +97,8 @@ dag = DAG(
     dag_id=MAIN_DAG,
     default_args=default_args,
     start_date=dag_start_date,
+    concurrency=2,
+    max_active_runs=2,
     schedule_interval=timedelta(days=1))
 
 done = DummyOperator(

@@ -21,7 +21,8 @@ def init_airflow_db():
 
 def backfill_dag(dag_id: str, start_time: str, end_time: str):
 
-    subprocess.Popen(["airflow", "backfill", "-l", "-x", "-B", "-s", start_time, "-e", end_time, dag_id])
+    # subprocess.Popen(["airflow", "backfill", "-l", "-x", "-B", "-s", start_time, "-e", end_time, dag_id])
+    subprocess.Popen(["airflow", "backfill", "-l", "-x", "-s", start_time, "-e", end_time, dag_id])
 
 
 def unpause_stock_dag(dag_id: str):
