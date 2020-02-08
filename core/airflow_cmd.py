@@ -17,8 +17,6 @@ def init_airflow_db():
 
     print('[*] start initialize airflow database')
     subprocess.Popen(["airflow", "initdb"])
-    from distutils.dir_util import copy_tree
-    copy_tree("./core/dags", "airflow/dags")
 
 
 def backfill_dag(dag_id: str, start_time: str, end_time: str):
