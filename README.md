@@ -1,4 +1,4 @@
-## Machine Learning Based Taiwan Stock Predictor
+## Machine Learning Based Taiwan Stock Prediction
 ---
 #### Usage
 ```
