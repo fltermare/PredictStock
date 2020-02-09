@@ -384,7 +384,6 @@ def delete_stock(stock_code):
     connection.commit()
 
 
-
 def update_stock_info():
 
     connection  = db_connect()

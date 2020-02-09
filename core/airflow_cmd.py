@@ -12,7 +12,6 @@ def set_airflow_env():
     print("[stock] set env %s" % os.environ['STOCK_HOME'])
 
 
-
 def init_airflow_db():
 
     print('[*] start initialize airflow database')
@@ -40,7 +39,6 @@ def clear_dag(dag_id: str, start_time: str, end_time: str, flag: bool):
         subprocess.call(["airflow", "backfill", "--mark_success", "-s", start_time, "-e", end_time, "stock_update_dag"])
     #proc.poll()
     #subprocess.Popen(["airflow", "delete_dag", "-y", dag_id])
-
 
 
 def start_airflow():
