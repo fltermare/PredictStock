@@ -9,7 +9,6 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
 
-from core.fetch_data import get_new_data
 from core.training import train_model
 from core.predict import stock_predict
 from core.db import db_register, db_user_login
@@ -235,9 +234,6 @@ def manage():
     if request.method == "POST":
         print('--------------')
         add_new_stock(request.form['stock_code'], request.form['first_month'])
-        #print(request.form['stock_code'])
-        #print(request.form['first_month'])
-        #print(request.form['last_month'])
         print('--------------')
 
     stock_info = get_available_stock_info()
@@ -252,7 +248,6 @@ def fetch(stock_code, last_date):
 
     try:
         delete_stock(stock_code)
-        #get_new_data(stock_code, last_date)
         flash('Delete', 'success')
     except Exception as e:
         flash('Delete Failed' + e, 'danger')

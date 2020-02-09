@@ -80,14 +80,6 @@ def db_init():
             PRIMARY KEY (stock_code, date)
         )""")
 
-    # testing
-    #cursor.execute("INSERT INTO stock (stock_code, name, first_record_year, last_record_year) VALUES (?, ?, ?, ?)", (5566, '測試公司', 2008, 2018))
-    #insert_test_sql = """ INSERT INTO stock_history (stock_code, date, capacity, turnover, open, high, low, close, change, transactions) 
-    #          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
-    #task_1 = (5566, '2018-01-01', 1, 2, 3.1, 3.2, 3.0, 3.1, 0.7, 100)
-    #cursor.execute(insert_test_sql, task_1)
-    #task_2 = (5576, '2018-01-01', 1, 2, 3.1, 3.2, 3.0, 3.1, 0.7, 100)
-    #cursor.execute(insert_test_sql, task_2)
     connection.commit()
     connection.close()
 
@@ -133,8 +125,6 @@ def store_year_data(stock_code, year_data_file):
         init_year_sql_tuple = (stock_code, year)
         cursor.execute(init_year_sql, init_year_sql_tuple)
         connection.commit()
-        #connection.close()
-        #return
         
         # insert data record (per year)
         year_data = pd.read_csv(year_data_file)
@@ -196,14 +186,6 @@ def db_init_user_table():
             register_date DATETIME DEFAULT CURRENT_TIMESTAMP
         )""")
 
-    # testing
-    #cursor.execute("INSERT INTO stock (stock_code, name, first_record_year, last_record_year) VALUES (?, ?, ?, ?)", (5566, '測試公司', 2008, 2018))
-    #insert_test_sql = """ INSERT INTO stock_history (stock_code, date, capacity, turnover, open, high, low, close, change, transactions) 
-    #          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
-    #task_1 = (5566, '2018-01-01', 1, 2, 3.1, 3.2, 3.0, 3.1, 0.7, 100)
-    #cursor.execute(insert_test_sql, task_1)
-    #task_2 = (5576, '2018-01-01', 1, 2, 3.1, 3.2, 3.0, 3.1, 0.7, 100)
-    #cursor.execute(insert_test_sql, task_2)
     connection.commit()
     connection.close()
 
@@ -262,6 +244,7 @@ def db_user_login(username, password_candidate):
 
 def get_available_stocks():
     """get available stocks in db
+
     Returns:
         result: a list of tuple
                 [(stock_code `str`, stock_name `str`), ...]
@@ -372,13 +355,13 @@ def delete_stock(stock_code):
                 SELECT MIN(date), MAX(date)
                 FROM stock_history
                 """
-        #query_sql_tuple = (stock_code,)
-        #cursor.execute(query_sql, query_sql_tuple)
-        #if first:
+
         cursor.execute(query_sql)
         start_day, last_day = cursor.fetchone()
+
         print(start_day, last_day)
         print(type(start_day), type(last_day))
+
         task_id = ".".join([MAIN_DAG, "day_check_dag_%s" % stock_code])
         clear_dag(task_id, str(start_day), str(last_day), flag)
 

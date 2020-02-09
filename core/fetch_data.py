@@ -8,12 +8,12 @@ from core.db import insert_new_data, update_stock_info
 from pathlib import Path
 
 def stock2df(stock_m):
-    """
-    parse stock object and turn into dataframe
+    """Parse stock object and turn into dataframe
 
-    `Args`
+    Args:
         stock_m: stock object including 1 month infomation
-    `Returns`
+
+    Returns:
         df_m: dataframe
     """
     columns = ['date', 'capacity', 'turnover', 'open', 'high', 'low', 'close', 'change', 'transaction']
@@ -45,13 +45,13 @@ def check_exist(stock_code, year, update=False):
     
     
 def get_stock_year_history(stock_code='2330', years=[2018]):
-    """
-    get specific stock history and save it
+    """Get specific stock history and save it
 
-    `Args`
+    Args:
         stock_code: code of target stock
         years: a list of interested years
-    `Return`
+
+    Returns:
         history_result: a dataframe of a stock's history
     """
     stock = twstock.Stock(stock_code)
@@ -100,42 +100,3 @@ def load_stock_year_csv(stock_code, year):
     csv_path = p / stock_code / (str(year)+'.csv')
     stock_year_df = pd.read_csv(csv_path)
     return stock_year_df
-
-
-def get_new_data(stock_code, last_date):
-    return
-    ###########
-    stock = twstock.Stock(stock_code)
-    today = datetime.datetime.today()
-    last_date = datetime.datetime.strptime(last_date, "%Y-%m-%d")
-    #print('\n-\n', last_date, type(last_date), '\n', today, type(today), '\n-')
-
-    for year in range(last_date.year, (today.year + 1)):
-        if year == last_date.year:
-            start_month, end_month = last_date.month, 12
-        elif year == today.year:
-            start_month, end_month = 1, today.month
-        else:
-            start_month, end_month = 1, 12
-
-        # Aggregate monthly new data
-        tmp_df_list = []
-        for month in range(start_month, end_month+1):
-            stock.fetch(year, month)
-            tmp = copy.deepcopy(stock)
-            if not tmp:
-                continue
-            tmp_df_list.append(stock2df(tmp))
-            time.sleep(10)
-        updated_df = pd.concat(tmp_df_list, ignore_index=True)
-
-        # Update Database
-        insert_new_data(stock_code, updated_df)
-
-        # Aggregate existed and new data
-        if check_exist(stock_code, year, update=True):
-            stock_year_df = load_stock_year_csv(stock_code, year)
-            updated_df = pd.concat([stock_year_df, updated_df]).reset_index(drop=True).drop_duplicates()
-        dataframe2csv(stock_code, year, updated_df)
-
-    update_stock_info()

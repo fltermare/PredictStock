@@ -26,7 +26,6 @@ class DataLoader():
 
     def load_history(self):
         connection = db_connect()
-        #cursor = connection.cursor()
         tmp_df_list = []
         indexs = []
         count = 0
@@ -46,7 +45,6 @@ class DataLoader():
         connection.close()
 
         df = pd.concat(tmp_df_list, ignore_index=True)
-        #parts = df.iloc[indexs, :]
         return df, indexs
     
     def split_dataset(self):
@@ -82,7 +80,7 @@ class DataLoader():
 
         df[['ori_close', 'ori_change']] = df[['close', 'change']]
         df[normalize_columns] = self.scalers[stock_code].transform(df[normalize_columns])
-        #print(df.head())
+
         return df
 
     def gen_scaler(self, stock_code, parts_df):
@@ -132,12 +130,6 @@ class DataGenerator(Sequence):
                 tmp = self.all_data.iloc[new_random_idx-self.seq_len+1:new_random_idx+2, :]
                 diff_close = tmp['ori_close'].iloc[-1] - tmp['ori_close'].iloc[0]
                 diff_change = tmp['ori_change'].iloc[1:].sum()
-                #print('\n', idx, new_random_idx, len(tt))
-                
-                #print('[surprise] diff_change != diff_close' ,round(diff_close, 3), round(diff_change, 3))
-                #print(tmp[['stock_code', 'date', 'ori_close', 'ori_change']])
-                #random_idx = np.random.randint(0, self.__len__()-1)
-                #return __getitem__(random_idx)
 
             target.append(round(diff_close, 3))
 
