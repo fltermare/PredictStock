@@ -110,8 +110,8 @@ def stock_code_check(stock_code):
     if not result:
         # new stock code
         insert_sql = """INSERT INTO stock (stock_code, name) VALUES (?, ?)"""
-        stock = twstock.realtime.get(stock_code)
-        init_stock_tuple = (stock_code, stock['info']['name'])
+        stock = twstock.codes[stock_code]
+        init_stock_tuple = (stock_code, stock.name)
         cursor.execute(insert_sql, init_stock_tuple)
         connection.commit()
     connection.close()
