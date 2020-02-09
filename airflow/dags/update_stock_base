@@ -76,7 +76,7 @@ def update_db(stock_code, db_path, **context):
     """ """
     updated_df = context['task_instance'].xcom_pull(task_ids='fetch_stock')
 
-    insert_new_data(int(stock_code), updated_df, db_path)
+    insert_new_data(stock_code, updated_df, db_path)
 
     print('[*******update_db********]', updated_df.shape)
 
@@ -87,7 +87,7 @@ def save2disk(stock_code, **context):
     execution_date = context['execution_date']
     year = execution_date.year
 
-    save_stock_to_disk(int(stock_code), updated_df, year)
+    save_stock_to_disk(stock_code, updated_df, year)
 
     print('[*******save2disk********]', updated_df.shape)
 

@@ -52,21 +52,21 @@ def db_init():
     cursor.execute('PRAGMA foreign_keys = ON')
     cursor.execute("""
         CREATE TABLE stock (
-            stock_code INTEGER PRIMARY KEY UNIQUE NOT NULL,
-            name TXT NOT NULL,
+            stock_code TEXT PRIMARY KEY UNIQUE NOT NULL,
+            name TEXT NOT NULL,
             first_record_date DATE,
             last_record_date DATE
         )""")
     cursor.execute("""
         CREATE TABLE year (
-            stock_code INTEGER NOT NULL,
+            stock_code TEXT NOT NULL,
             stock_year INTEGER NOT NULL,
             FOREIGN KEY (stock_code) REFERENCES stock(stock_code),
             PRIMARY KEY (stock_code, stock_year)
         )""")
     cursor.execute("""
         CREATE TABLE stock_history (
-            stock_code INTEGER NOT NULL,
+            stock_code TEXT NOT NULL,
             date DATE NOT NULL,
             capacity INTEGER NOT NULL,
             turnover INTEGER NOT NULL,
@@ -108,7 +108,7 @@ def stock_code_check(stock_code):
     result = cursor.fetchone()
     
     if not result:
-    # new stock code
+        # new stock code
         insert_sql = """INSERT INTO stock (stock_code, name) VALUES (?, ?)"""
         stock = twstock.realtime.get(stock_code)
         init_stock_tuple = (stock_code, stock['info']['name'])
@@ -264,7 +264,7 @@ def get_available_stocks():
     """get available stocks in db
     Returns:
         result: a list of tuple
-                [(stock_code `int`, stock_name `str`), ...]
+                [(stock_code `str`, stock_name `str`), ...]
     """
 
     connection  = db_connect()
@@ -322,8 +322,8 @@ def add_new_stock(stock_code, start_date):
     connection  = db_connect()
     cursor = connection.cursor()
 
-    stock = twstock.realtime.get(stock_code)
-    stock_name = stock['info']['name']
+    stock = twstock.codes[stock_code]
+    stock_name = stock.name
     start_date = datetime.datetime.strptime(start_date, '%Y-%m')
 
     insert_sql = """ INSERT or REPLACE INTO stock (stock_code, name, first_record_date, last_record_date)

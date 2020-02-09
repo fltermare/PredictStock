@@ -174,7 +174,7 @@ def update_stock_info(stock_code, db_path):
 
 
 
-def save_stock_to_disk(stock_code: int, updated_df, year):
+def save_stock_to_disk(stock_code: str, updated_df, year):
 
     if check_exist(stock_code, year, update=True):
         stock_year_df = load_stock_year_csv(stock_code, year)
