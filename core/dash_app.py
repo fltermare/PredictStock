@@ -44,7 +44,7 @@ def display_stock(server):
                 stock_code_name = get_available_stocks()
 
                 # Get selected stock_code from request_args
-                selected_stock_code = int(value[key == 'stock_code'].iloc[0])
+                selected_stock_code = value[key == 'stock_code'].iloc[0]
 
                 return html.Div([
                     html.Label('Dropdown'),
@@ -84,7 +84,7 @@ def display_stock(server):
         # Fetch name
         query_sql = """
                     SELECT name FROM stock
-                    WHERE stock_code=%s
+                    WHERE stock_code=\'%s\'
                     """ % stock_code
         df = pd.read_sql(query_sql, connection)
         stock_name = df['name'].values[0]
@@ -92,7 +92,7 @@ def display_stock(server):
         # Fetch price
         query_sql = """
                     SELECT * FROM stock_history
-                    WHERE stock_code=%s
+                    WHERE stock_code=\'%s\'
                     ORDER BY stock_history.date
                     """ % stock_code
         df = pd.read_sql(query_sql, connection)

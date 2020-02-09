@@ -33,7 +33,7 @@ class DataLoader():
         for stock_code in self.stock_codes:
             query_sql = """
                         SELECT * FROM stock_history
-                        WHERE stock_code=%s
+                        WHERE stock_code=\'%s\'
                         ORDER BY stock_history.date
                         """ % stock_code
             df = pd.read_sql(query_sql, connection)

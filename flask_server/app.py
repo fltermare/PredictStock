@@ -207,7 +207,7 @@ def dashboard():
             return render_template('dashboard.html', error=error, dash_url=dash_url, stock_code_name=stock_code_name)
 
         # Reorder stock_code_name
-        selected_stock_code_index = [i for i, v in enumerate(stock_code_name) if v[0] == int(stock_code)].pop()
+        selected_stock_code_index = [i for i, v in enumerate(stock_code_name) if v[0] == stock_code].pop()
         selected_stock_code_name = stock_code_name.pop(selected_stock_code_index)
         stock_code_name.insert(0, selected_stock_code_name)
 
