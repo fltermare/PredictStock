@@ -15,7 +15,7 @@ def set_airflow_env():
 def init_airflow_db():
 
     print('[*] start initialize airflow database')
-    subprocess.Popen(["airflow", "initdb"])
+    subprocess.call(["airflow", "initdb"])
 
 
 def backfill_dag(dag_id: str, start_time: str, end_time: str):
@@ -45,9 +45,9 @@ def start_airflow():
 
     print('[airflow] started')
 
-    #subprocess.Popen(["airflow", "webserver", "-D", "-p", "8080"])
-    #subprocess.Popen(["airflow", "scheduler", "-D"])
-    subprocess.Popen(["airflow", "pool", "-s", "default_pool", "128", "default", "pool"])
+    # subprocess.Popen(["airflow", "webserver", "-D", "-p", "8080"])
+    # subprocess.Popen(["airflow", "scheduler", "-D"])
+    # subprocess.Popen(["airflow", "pool", "-s", "default_pool", "128", "default", "pool"])
     subprocess.Popen(["airflow", "webserver", "-p", "8080"])
     subprocess.Popen(["airflow", "scheduler"])
 

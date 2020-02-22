@@ -90,9 +90,9 @@ def predict():
 """
 
 
-@app.route('/')
-def index():
-    return render_template('home.html')
+# @app.route('/')
+# def index():
+#     return render_template('home.html')
 
 
 ### Register Form Class
@@ -174,9 +174,9 @@ def logout():
     return redirect(url_for('login'))
 
 
-### Dashboard
+### Dashboard & Homepage
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/dashboard', methods=['GET', 'POST'])
-@is_logged_in
 def dashboard():
 
     # Get Stock Codes
@@ -263,4 +263,4 @@ def run_server():
            "please wait until server has fully started"))
 
     app.secret_key = "secret123"
-    app.run(debug=False)
+    app.run(debug=False, host='0.0.0.0')
