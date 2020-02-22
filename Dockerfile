@@ -21,7 +21,7 @@ RUN python3 -m pip install --upgrade pip setuptools && \
     python3 -m pip install -r requirements.txt
 
 ADD . /app
-RUN rm -r /app/airflow/Envs /app/airflow/logs
+RUN rm -rf /app/airflow/Envs /app/airflow/logs
 RUN echo n | python3 run.py --init
 
 EXPOSE 5000 8080
