@@ -10,8 +10,6 @@ ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 ENV LANGUAGE C.UTF-8
 
-RUN apt-get install -y python2.7 python2.7-dev
-RUN ln -s /usr/bin/python2.7 /usr/bin/python
 RUN apt-get install -y python3.6 python3-pip python3.6-dev
 
 RUN mkdir /app
@@ -23,6 +21,8 @@ RUN python3 -m pip install --upgrade pip setuptools && \
     python3 -m pip install -r requirements.txt
 
 ADD . /app
+RUN rm -r /app/airflow/Envs /app/airflow/logs
+RUN echo n | python3 run.py --init
 
 EXPOSE 5000 8080
 CMD ["python3", "run.py", "--start", "--update"]
