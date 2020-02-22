@@ -121,7 +121,7 @@ def register():
         if db_register(username, name, email, password):
             flash("Your are now registered and can log in", 'success')
 
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
 
     return render_template('register.html', form=form)
 
