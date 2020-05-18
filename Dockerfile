@@ -18,7 +18,7 @@ WORKDIR /app
 COPY requirements.txt /app/
 
 RUN python3 -m pip install --upgrade pip setuptools && \
-    python3 -m pip install -r requirements.txt
+    python3 -m pip install --no-cache-dir -r requirements.txt
 
 ADD . /app
 RUN rm -rf /app/airflow/Envs /app/airflow/logs
