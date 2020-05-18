@@ -1,10 +1,11 @@
 import configparser
+import tensorflow as tf
 from core.dataloader import DataLoader, DataGenerator
 from core.db import get_available_stocks
-from keras.models import Model
-from keras.callbacks import ModelCheckpoint, EarlyStopping
-from keras.layers import Input, Flatten, BatchNormalization, Activation, Dense
-from keras.layers import Bidirectional, LSTM
+from tensorflow.keras import Model
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.layers import Input, Flatten, BatchNormalization, Activation, Dense
+from tensorflow.keras.layers import Bidirectional, LSTM
 
 CONFIG = configparser.ConfigParser()
 CONFIG.read('config.ini')

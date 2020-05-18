@@ -3,7 +3,6 @@ import configparser
 import dash
 import io
 import tensorflow as tf
-from keras.models import load_model
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
@@ -20,12 +19,11 @@ app = Flask(__name__)
 app, create_secret = dash_app.display_stock(app)
 
 model = None
-graph = None
-CUDA_VISIBLE_DEVICES=1
-from keras.backend.tensorflow_backend import set_session
-configuration = tf.compat.v1.ConfigProto()
-configuration.gpu_options.per_process_gpu_memory_fraction = 0.3
-set_session(tf.compat.v1.Session(config=configuration))
+# CUDA_VISIBLE_DEVICES=1
+# from keras.backend.tensorflow_backend import set_session
+# configuration = tf.compat.v1.ConfigProto()
+# configuration.gpu_options.per_process_gpu_memory_fraction = 0.3
+# set_session(tf.compat.v1.Session(config=configuration))
 
 CONFIG = configparser.ConfigParser()
 CONFIG.read('config.ini')
@@ -33,9 +31,8 @@ ML_MODLE_PATH = str(CONFIG['COMMON']['ML_MODLE_PATH'])
 
 
 def load_ml_model():
-    global model, graph
-    model = load_model(ML_MODLE_PATH)
-    graph = tf.get_default_graph()
+    global model
+    model = tf.keras.models.load_model(ML_MODLE_PATH)
 
 
 """
@@ -200,8 +197,9 @@ def dashboard():
 
         # ML thing
         try:
-            predict_price, real_predict_date = stock_predict(model, graph, stock_code, date)
-        except:
+            predict_price, real_predict_date = stock_predict(model, stock_code, date)
+        except Exception as err:
+            print(err)
             error = "Error Occured"
             return render_template('dashboard.html', error=error, dash_url=dash_url, stock_code_name=stock_code_name)
 
