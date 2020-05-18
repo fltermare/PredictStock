@@ -98,7 +98,7 @@ dag = DAG(
     default_args=default_args,
     start_date=dag_start_date,
     concurrency=2,
-    max_active_runs=5,
+    max_active_runs=3,
     schedule_interval=timedelta(days=1))
 
 done = DummyOperator(

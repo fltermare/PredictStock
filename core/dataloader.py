@@ -6,9 +6,10 @@ import random
 import numpy as np
 import pandas as pd
 import pickle
+import tensorflow as tf
 from core.db import db_connect
 from sklearn import preprocessing
-from keras.utils import Sequence
+from tensorflow.keras.utils import Sequence
 
 CONFIG = configparser.ConfigParser()
 CONFIG.read('config.ini')
