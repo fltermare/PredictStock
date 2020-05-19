@@ -87,11 +87,6 @@ def predict():
 """
 
 
-# @app.route('/')
-# def index():
-#     return render_template('home.html')
-
-
 ### Register Form Class
 class RegisterForm(Form):
     username = StringField('Username', [validators.Length(min=3, max=25)])
