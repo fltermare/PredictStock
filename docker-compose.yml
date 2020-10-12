@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+    # tf_serving:
+    #     image: tensorflow/serving
+    #     command:
+    #         - '--model_config_file=/models/model_config_list'
+    #     ports:
+    #         - "8501:8501"
+    #     volumes:
+    #         - type: bind
+    #           source: ${PWD}/tomato_classifier/tomato_model
+    #           target: /models/tomato_model
+    #         - type: bind
+    #           source: ${PWD}/tomato_classifier/model_config_list
+    #           target: /models/model_config_list
+
+    webserver:
+        build:
+            context: webserver/
+        command: flask run --host=0.0.0.0
+        environment:
+            FLASK_ENV: development
+        ports:
+            - "5000:5000"
+        volumes:
+            - type: bind
+              source: ${PWD}/webserver
+              target: /app
+        networks:
+            - stock_network
+
+    db:
+        build:
+            context: database/
+        environment:
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_USER: postgres
+            POSTGRES_DB: db
+        volumes:
+            - pgdata:/var/lib/postgresql/data/
+            # - ./database/load_sampledata.bash:/load_sampledata.bash
+        ports:
+            - "5432:5432"
+        networks:
+            - stock_network
+
+    # pgadmin:
+    #     image: dpage/pgadmin4
+    #     environment:
+    #         PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-user@email.com}
+    #         PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-user}
+    #     ports:
+    #         - "5050:80"
+    #     volumes:
+    #         - pgadmin:/root/.pgadmin
+    #     networks: 
+    #         - stock_network
+
+volumes:
+    pgdata:
+    # pgadmin:
+
+networks:
+    stock_network:
+        driver: bridge
