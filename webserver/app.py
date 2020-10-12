@@ -2,21 +2,21 @@
 import configparser
 import dash
 import io
-import tensorflow as tf
+# import tensorflow as tf
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from functools import wraps
 
-from core.training import train_model
-from core.predict import stock_predict
-from core.db import db_register, db_user_login
-from core.db import LoginException, get_available_stocks, get_available_stock_info, add_new_stock, delete_stock
-from core import dash_app
+# from core.training import train_model
+# from core.predict import stock_predict
+# from core.db import db_register, db_user_login
+# from core.db import LoginException, get_available_stocks, get_available_stock_info, add_new_stock, delete_stock
+# from core import dash_app
 from datetime import datetime
 
 app = Flask(__name__)
-app, create_secret = dash_app.display_stock(app)
+# app, create_secret = dash_app.display_stock(app)
 
 model = None
 # CUDA_VISIBLE_DEVICES=1
@@ -25,14 +25,14 @@ model = None
 # configuration.gpu_options.per_process_gpu_memory_fraction = 0.3
 # set_session(tf.compat.v1.Session(config=configuration))
 
-CONFIG = configparser.ConfigParser()
-CONFIG.read('config.ini')
-ML_MODLE_PATH = str(CONFIG['COMMON']['ML_MODLE_PATH'])
+# CONFIG = configparser.ConfigParser()
+# CONFIG.read('config.ini')
+# ML_MODLE_PATH = str(CONFIG['COMMON']['ML_MODLE_PATH'])
 
 
-def load_ml_model():
-    global model
-    model = tf.keras.models.load_model(ML_MODLE_PATH)
+# def load_ml_model():
+#     global model
+#     model = tf.keras.models.load_model(ML_MODLE_PATH)
 
 
 """
@@ -87,87 +87,87 @@ def predict():
 """
 
 
-### Register Form Class
-class RegisterForm(Form):
-    username = StringField('Username', [validators.Length(min=3, max=25)])
-    name = StringField('Name', [validators.Length(min=1, max=50)])
-    email = StringField('Email', [validators.Length(min=6, max=50)])
-    password = PasswordField('Password', [
-        validators.DataRequired(),
-        validators.EqualTo('confirm', message='Passwords do not match')
-    ])
-    confirm = PasswordField('Confirm Password')
+# ### Register Form Class
+# class RegisterForm(Form):
+#     username = StringField('Username', [validators.Length(min=3, max=25)])
+#     name = StringField('Name', [validators.Length(min=1, max=50)])
+#     email = StringField('Email', [validators.Length(min=6, max=50)])
+#     password = PasswordField('Password', [
+#         validators.DataRequired(),
+#         validators.EqualTo('confirm', message='Passwords do not match')
+#     ])
+#     confirm = PasswordField('Confirm Password')
 
 
-### User Register
-@app.route('/register', methods=['Get', 'POST'])
-def register():
-    form = RegisterForm(request.form)
-    if request.method == 'POST' and form.validate():
-        username = form.username.data
-        name = form.name.data
-        email = form.email.data
-        password = sha256_crypt.encrypt(str(form.password.data))
+# ### User Register
+# @app.route('/register', methods=['Get', 'POST'])
+# def register():
+#     form = RegisterForm(request.form)
+#     if request.method == 'POST' and form.validate():
+#         username = form.username.data
+#         name = form.name.data
+#         email = form.email.data
+#         password = sha256_crypt.encrypt(str(form.password.data))
 
-        # Insert to DB
-        if db_register(username, name, email, password):
-            flash("Your are now registered and can log in", 'success')
+#         # Insert to DB
+#         if db_register(username, name, email, password):
+#             flash("Your are now registered and can log in", 'success')
 
-        return redirect(url_for('dashboard'))
+#         return redirect(url_for('dashboard'))
 
-    return render_template('register.html', form=form)
-
-
-### User login
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        # Get Form Value
-        username = request.form['username']
-        password_candidate = request.form['password']
-        try:
-            db_user_login(username, password_candidate)
-        except LoginException as e:
-            # Failed to login
-            app.logger.info(e.msg)
-            error = "Invalid Login"
-            return render_template('login.html', error=error)
-
-        # Login Successful
-        app.logger.info('PASS')
-        session['logged_in'] = True
-        session['username'] = username
-
-        flash('You are now logged in', 'success')
-        return redirect(url_for('dashboard'))
-
-    return render_template('login.html')
+#     return render_template('register.html', form=form)
 
 
-### Check if user logged in
-def is_logged_in(func):
-    @wraps(func)
-    def wrap(*args, **kwargs):
-        if 'logged_in' in session:
-            return func(*args, **kwargs)
-        else:
-            flash('Unauthorized, Please login', 'danger')
-            return redirect(url_for('login'))
+# ### User login
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         # Get Form Value
+#         username = request.form['username']
+#         password_candidate = request.form['password']
+#         try:
+#             db_user_login(username, password_candidate)
+#         except LoginException as e:
+#             # Failed to login
+#             app.logger.info(e.msg)
+#             error = "Invalid Login"
+#             return render_template('login.html', error=error)
 
-    return wrap
+#         # Login Successful
+#         app.logger.info('PASS')
+#         session['logged_in'] = True
+#         session['username'] = username
+
+#         flash('You are now logged in', 'success')
+#         return redirect(url_for('dashboard'))
+
+#     return render_template('login.html')
 
 
-### Logout
-@app.route('/logout')
-@is_logged_in
-def logout():
-    session.clear()
-    flash('You are now logged out', 'success')
-    return redirect(url_for('login'))
+# ### Check if user logged in
+# def is_logged_in(func):
+#     @wraps(func)
+#     def wrap(*args, **kwargs):
+#         if 'logged_in' in session:
+#             return func(*args, **kwargs)
+#         else:
+#             flash('Unauthorized, Please login', 'danger')
+#             return redirect(url_for('login'))
+
+#     return wrap
+
+
+# ### Logout
+# @app.route('/logout')
+# @is_logged_in
+# def logout():
+#     session.clear()
+#     flash('You are now logged out', 'success')
+#     return redirect(url_for('login'))
 
 
 ### Dashboard & Homepage
-@app.route('/', methods=['GET', 'POST'])
+# @app.route('/', methods=['GET', 'POST'])
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
 
@@ -219,41 +219,50 @@ def dashboard():
     return render_template('dashboard.html', dash_url=dash_url, stock_code_name=stock_code_name)
 
 
-### Show Stock Info
-@app.route('/manage', methods=["GET", "POST"])
-@is_logged_in
-def manage():
+# ### Show Stock Info
+# @app.route('/manage', methods=["GET", "POST"])
+# @is_logged_in
+# def manage():
 
-    if request.method == "POST":
-        print('--------------')
-        add_new_stock(request.form['stock_code'], request.form['first_month'])
-        print('--------------')
+#     if request.method == "POST":
+#         print('--------------')
+#         add_new_stock(request.form['stock_code'], request.form['first_month'])
+#         print('--------------')
 
-    stock_info = get_available_stock_info()
+#     stock_info = get_available_stock_info()
 
-    return render_template('manage.html', stock_info=stock_info)
+#     return render_template('manage.html', stock_info=stock_info)
 
 
-### Fetch New Stock Price Data
-@app.route('/fetch/<string:stock_code>/<string:last_date>', methods=['Post'])
-@is_logged_in
-def fetch(stock_code, last_date):
+# ### Fetch New Stock Price Data
+# @app.route('/fetch/<string:stock_code>/<string:last_date>', methods=['Post'])
+# @is_logged_in
+# def fetch(stock_code, last_date):
 
-    try:
-        delete_stock(stock_code)
-        flash('Delete', 'success')
-    except Exception as e:
-        flash('Delete Failed' + e, 'danger')
+#     try:
+#         delete_stock(stock_code)
+#         flash('Delete', 'success')
+#     except Exception as e:
+#         flash('Delete Failed' + e, 'danger')
 
-    return redirect(url_for('manage'))
+#     return redirect(url_for('manage'))
+
+
+@app.route('/', methods=['GET', 'POST'])
+def entry():
+    return "hello"
 
 
 def run_server():
 
-    load_ml_model()
+    # load_ml_model()
 
     print((" * Loading Keras model and Flask starting server..."
            "please wait until server has fully started"))
 
     app.secret_key = "secret123"
-    app.run(debug=False, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0')
+
+
+if __name__ == "__main__":
+    run_server()
