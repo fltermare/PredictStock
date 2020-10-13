@@ -39,7 +39,6 @@ services:
             POSTGRES_DB: db
         volumes:
             - pgdata:/var/lib/postgresql/data/
-            # - ./database/load_sampledata.bash:/load_sampledata.bash
         ports:
             - "5432:5432"
         networks:
