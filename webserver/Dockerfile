@@ -5,4 +5,8 @@ WORKDIR /app
 
 COPY requirements.txt /app/
 RUN pip install -r requirements.txt
-COPY app.py /app/
+
+COPY *.py /app/
+ADD ./core /app/core
+ADD ./static /app/static
+ADD ./templates /app/templates
