@@ -13,12 +13,12 @@ def auths():
 def db():
     # res = query_available_stock()
     res = history_price()
-    return res
+    return 'db'
 
 @view_page.route('/db2')
 def db2():
     res = get_stock_list()
-    return res
+    return str(res)
 
 
 # @view_page.route('/dashboard')

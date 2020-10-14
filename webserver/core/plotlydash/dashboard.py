@@ -7,7 +7,8 @@ import dash_html_components as html
 import dash_core_components as dcc
 from .data import create_dataframe
 from .layout import html_layout
-
+# from core.model.database import db
+# from core.model.database import get_stock_list
 
 def init_dashboard(server):
     """Create a Plotly Dash dashboard."""

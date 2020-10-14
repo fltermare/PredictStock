@@ -1,5 +1,8 @@
-from .. import db
+# from .. import db
+from flask_sqlalchemy import SQLAlchemy
+import pandas as pd
 
+db = SQLAlchemy()
 
 # def get_available_stock():
 #     sql_cmd = """
@@ -54,17 +57,34 @@ class History(db.Model):
 
 
 def get_stock_list():
+    """
+    Return:
+        res: list of stock code; List[str]
+    """
 
     query = db.session.query(Stock.stock_code).distinct()
     res = [s.stock_code for s in query]
-    return str(res)
+    return res
 
 
 def history_price(stock_code='0050'):
     # query = db.session.query(History.close, History.open).filter_by(stock_code=stock_code).all()
     # query = db.session.query(History).filter_by(stock_code=stock_code).order_by(History.date).all()
-    query = db.session.query(History).filter_by(stock_code=stock_code).order_by(History.date.desc()).all()
-    print(len(query))
+    query = db.session.query(History).filter_by(stock_code=stock_code).order_by(History.date.desc())
+    print(type(query))
+    # for _ in query:
+    #     print(_.stock_code, _.date, _.close, _.open)
+    df = pd.read_sql(sql=query.statement, con=db.session.bind)
+    # print(df)
+
+    return df
+
+
+def query_stock_name(stock_code='0050'):
+    query = db.session.query(Stock).filter_by(stock_code=stock_code).distinct()
+
+    print('----')
     for _ in query:
-        print(_.stock_code, _.date, _.close, _.open)
-    return str(len(query))
+        print(_)
+    print('----')
+    return query[0].name

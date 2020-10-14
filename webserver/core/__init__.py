@@ -1,9 +1,11 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from core.config.config import config
-from core.plotlydash.dashboard import init_dashboard
+# from core.plotlydash.dashboard import init_dashboard
+from core.model.dash_app import init_dashboard
+from core.model.database import db
 
-db = SQLAlchemy()
+# db = SQLAlchemy()
 
 def create_app(config_name):
 

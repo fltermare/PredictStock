@@ -8,5 +8,5 @@ RUN pip install -r requirements.txt
 
 COPY *.py /app/
 ADD ./core /app/core
-ADD ./static /app/static
-ADD ./templates /app/templates
+# ADD ./static /app/static
+# ADD ./templates /app/templates
