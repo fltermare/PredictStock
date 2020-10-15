@@ -61,16 +61,27 @@ def get_stock_list():
     Return:
         res: list of stock code; List[str]
     """
-
+    print("get_stock_list", id(db))
     query = db.session.query(Stock.stock_code).distinct()
     res = [s.stock_code for s in query]
     return res
 
 
-def history_price(stock_code='0050'):
+def history_price(stock_codes=['0050']):
+    """
+    Args:
+        stock_codes: list of stock codes
+
+    Return:
+        df: dataframe
+    """
+
+    print("history_price", id(db))
     # query = db.session.query(History.close, History.open).filter_by(stock_code=stock_code).all()
     # query = db.session.query(History).filter_by(stock_code=stock_code).order_by(History.date).all()
-    query = db.session.query(History).filter_by(stock_code=stock_code).order_by(History.date.desc())
+
+    # query = db.session.query(History).filter_by(stock_code=stock_code).order_by(History.date.desc())
+    query = db.session.query(History).filter(History.stock_code.in_(stock_codes)).order_by(History.date.desc())
     print(type(query))
     # for _ in query:
     #     print(_.stock_code, _.date, _.close, _.open)
@@ -81,6 +92,7 @@ def history_price(stock_code='0050'):
 
 
 def query_stock_name(stock_code='0050'):
+    print("query_stock_name", id(db))
     query = db.session.query(Stock).filter_by(stock_code=stock_code).distinct()
 
     print('----')

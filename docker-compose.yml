@@ -4,9 +4,10 @@ services:
     webserver:
         build:
             context: webserver/
-        command: flask run --host=0.0.0.0
+        # command: flask run --host=0.0.0.0
+        command: "gunicorn --bind=0.0.0.0:5000 wsgi:application"
         environment:
-            FLASK_APP: main.py
+            FLASK_APP: wsgi.py
             FLASK_ENV: development
         ports:
             - "5000:5000"

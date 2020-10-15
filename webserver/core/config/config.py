@@ -20,7 +20,7 @@ class DevelopmentConfig(BaseConfig):
 
 
 class LocalTestConfig(BaseConfig):
-    DEBUG = False
+    DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@localhost:5432/db"
 

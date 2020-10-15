@@ -11,27 +11,25 @@ from core.model.database import db
 from core.model.database import get_stock_list, history_price, query_stock_name
 from core.plotlydash.layout import html_layout
 import plotly.graph_objs as go
-
-# def init_dashboard(server):
-#     dash_app = Dash(server=server, url_base_pathname='/dash/')
-#     dash_app.layout = html.Div(
-#         [dcc.Location(id='url', refresh=False),
-#         html.Div(id='index')]
-#     )
-#     return dash_app.server
+import plotly.express as px
 
 
 def init_dashboard(server):
+    print('dash __name__:', __name__)
+    print("init_dashboard", id(db))
     dash_app = Dash(
+        name=__name__,
         server=server,
         routes_pathname_prefix='/dash/',
+        # requests_pathname_prefix='/dash/',
+        suppress_callback_exceptions=True,
         external_stylesheets=[
             '.static_dash/dist/css/styles.css',
             'https://fonts.googleapis.com/css?family=Lato'
         ])
     print('aaaabbbb')
 
-    dash_app.index_string = html_layout
+    # dash_app.index_string = html_layout
 
     # cache = Cache(
     #     app.server,
@@ -53,7 +51,7 @@ def init_dashboard(server):
 
     init_callbacks(dash_app)
 
-    return dash_app.server
+    return dash_app
 
 
 def init_callbacks(dash_app):
@@ -98,7 +96,7 @@ def init_callbacks(dash_app):
             html.Br(),
             html.Div(id='target_div')
         ])
-        return html.Div('Error ! Forbidden !')
+        # return html.Div('Error ! Forbidden !')
 
 
     @dash_app.callback(Output('target_div', 'children'), [Input('stock_code_input', 'value'), Input('select_interval', 'value')])
@@ -124,6 +122,22 @@ def init_callbacks(dash_app):
                 x_data, y_data = x_data[-180:], y_data[-180:]
             elif select_interval == 4:
                 x_data, y_data = x_data[-365:], y_data[-365:]
+
+        figure = {
+                'data': [
+                    {
+                        'x': x_data,
+                        'y': y_data,
+                        'type': 'line',
+                        'name': stock_code
+                    },
+                ],
+                'layout': {
+                    'title': layout_title,
+
+                }
+            }
+        return dcc.Graph(figure=figure)
 
         return dcc.Graph(
             figure={

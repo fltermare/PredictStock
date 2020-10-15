@@ -1,6 +1,5 @@
-from core import create_app
-from core.controller.view import view_page
+from core.init_app import create_app
 
-# app = create_app('localtest')
-app = create_app('development')
-app.register_blueprint(view_page)
+flask_app = create_app('localtest')
+# flask_app = create_app('development')
+
