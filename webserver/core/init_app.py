@@ -7,16 +7,17 @@ def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
 
-    # database
-    from core.model.database import db
-    db.init_app(app)
+    with app.app_context():
+        # database
+        from core.model.database import db
+        db.init_app(app)
 
-    # flask blueprint
-    from core.controller.view import view_page
-    app.register_blueprint(view_page)
+        # flask blueprint
+        from core.controller.view import view_page
+        app.register_blueprint(view_page)
 
-    # dash application
-    from core.model.dash_app import init_dashboard
-    app = init_dashboard(app)
+        # dash application
+        from core.model.dash_app import init_dashboard
+        app = init_dashboard(app)
 
     return app

@@ -1,5 +1,6 @@
 from dash import Dash
 from dash.dependencies import Input, State, Output
+# import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
@@ -8,25 +9,28 @@ from flask_caching import Cache
 from datetime import datetime
 
 from core.model.database import db
-from core.model.database import get_stock_list, history_price, query_stock_name
-from core.plotlydash.layout import html_layout
+from core.model.database import get_stock_list, history_price, query_stock_name, get_options
 import plotly.graph_objs as go
-import plotly.express as px
+# import plotly.express as px
 
 
 def init_dashboard(server):
     print('dash __name__:', __name__)
     print("init_dashboard", id(db))
+    import os
+    assets_path = os.getcwd() + '/core/static/assets'
     dash_app = Dash(
         name=__name__,
         server=server,
         routes_pathname_prefix='/dash/',
         # requests_pathname_prefix='/dash/',
         suppress_callback_exceptions=True,
-        external_stylesheets=[
-            '.static_dash/dist/css/styles.css',
-            'https://fonts.googleapis.com/css?family=Lato'
-        ])
+        assets_folder=assets_path
+        # external_stylesheets=[
+        #     dbc.themes.BOOTSTRAP,
+        #     'https://fonts.googleapis.com/css?family=Lato'
+        # ]
+        )
     print('aaaabbbb')
 
     # dash_app.index_string = html_layout
@@ -39,9 +43,47 @@ def init_dashboard(server):
     #         'CACHE_THRESHOLD': 10  # should be equal to maximum number of active users
     #     })
 
+    # dash_app.layout = html.Div(
+    #     [dcc.Location(id='url', refresh=False),
+    #      html.Div(id='index')])
+
     dash_app.layout = html.Div(
-        [dcc.Location(id='url', refresh=False),
-         html.Div(id='index')])
+        children=[
+            html.Div(
+                className='row',
+                children=[
+                    html.Div(
+                        className='four columns div-user-controls',
+                        children=[
+                            html.H2('DASH - STOCK PRICE'),
+                            html.P('Pick one or more stocks from the dropdown below'),
+                            html.Div(
+                                className='div-for-dropdown',
+                                children=[
+                                    dcc.Dropdown(id='stockselector',
+                                                options=get_options(get_stock_list()),
+                                                multi=True,
+                                                value=[sorted(get_stock_list())[0]],
+                                                style={'backgroundColor': '#1E1E1E'},
+                                                className='stockselector'
+                                    ),
+                                ],
+                                style={'color': '#1E1E1E'}
+                            ),
+                        ]
+                    ),
+                    html.Div(
+                        className='eight columns div-for-charts bg-grey',
+                        children=[
+                            dcc.Graph(id='timeseries', config={'displayModeBar': False}, animate=True)
+
+                        ]
+                    )
+                ]
+            )
+        ]
+    )
+
 
     # @cache.memoize()
     # def create_secret(key):
@@ -55,12 +97,51 @@ def init_dashboard(server):
 
 
 def init_callbacks(dash_app):
+
+    # Callback for timeseries price
+    @dash_app.callback(Output('timeseries', 'figure'), [Input('stockselector', 'value')])
+    def update_graph(selected_dropdown_value):
+        data = []
+        df_sub = history_price(get_stock_list())
+        for stock in selected_dropdown_value:
+            data.append(go.Scatter(x=df_sub[df_sub['stock_code'] == stock]['date'],
+                                   y=df_sub[df_sub['stock_code'] == stock]['close'],
+                                   mode='lines',
+                                   opacity=0.7,
+                                   name=stock,
+                                   textposition='bottom center'))
+        # traces = [trace1]
+        # data = [val for sublist in traces for val in sublist]
+        # print('trace1')
+        # print(trace1)
+        # print('data')
+        # print(data)
+        # data = trace1
+        figure = {
+            'data': data,
+            'layout': go.Layout(
+                        # colorway=["#5E0DAC", '#FF4F00', '#375CB1', '#FF7400', '#FFF400', '#FF0056'],
+                        template='plotly_dark',
+                        paper_bgcolor='rgba(0, 0, 0, 0)',
+                        plot_bgcolor='rgba(0, 0, 0, 0)',
+                        margin={'b': 15},
+                        hovermode='x',
+                        autosize=True,
+                        title={'text': 'Stock Prices', 'font': {'color': 'white'}, 'x': 0.5},
+                        xaxis={'range': [df_sub['date'].min(), df_sub['date'].max()]},
+            ),
+        }
+
+        return figure
+
+
+
     @dash_app.callback(Output('index', 'children'), [Input('url', 'search')])
     def display_page(request_args):
         # if request_args:
-        rr = pd.Series(str(request_args)[1:].split('&')).str.split('=')
-        key = rr.str.get(0)
-        value = rr.str.slice(1, ).str.join('=')
+        # rr = pd.Series(str(request_args)[1:].split('&')).str.split('=')
+        # key = rr.str.get(0)
+        # value = rr.str.slice(1, ).str.join('=')
         # if 'secret' in list(key) and value[key == 'secret'].iloc[0] == create_secret(str(datetime.now()).split(':')[0]):
             # Query Stock in DB
         stock_code_name = get_stock_list()
@@ -106,7 +187,7 @@ def init_callbacks(dash_app):
         stock_name = query_stock_name(stock_code)
 
         # Fetch price
-        df = history_price(stock_code)
+        df = history_price([stock_code])
 
         if df.empty:
             layout_title = 'Not Exist'
@@ -139,18 +220,18 @@ def init_callbacks(dash_app):
             }
         return dcc.Graph(figure=figure)
 
-        return dcc.Graph(
-            figure={
-                'data': [
-                    {
-                        'x': x_data,
-                        'y': y_data,
-                        'type': 'line',
-                        'name': stock_code
-                    },
-                ],
-                'layout': {
-                    'title': layout_title,
+        # return dcc.Graph(
+        #     figure={
+        #         'data': [
+        #             {
+        #                 'x': x_data,
+        #                 'y': y_data,
+        #                 'type': 'line',
+        #                 'name': stock_code
+        #             },
+        #         ],
+        #         'layout': {
+        #             'title': layout_title,
 
-                }
-            })
+        #         }
+        #     })

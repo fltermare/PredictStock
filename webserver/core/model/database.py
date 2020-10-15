@@ -100,3 +100,11 @@ def query_stock_name(stock_code='0050'):
         print(_)
     print('----')
     return query[0].name
+
+
+def get_options(list_stocks):
+    dict_list = []
+    for i in list_stocks:
+        dict_list.append({'label': i, 'value': i})
+
+    return dict_list
