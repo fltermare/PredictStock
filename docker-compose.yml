@@ -30,6 +30,19 @@ services:
         networks:
             - stock_network
 
+    tfserving:
+        image: tensorflow/serving
+        environment:
+            MODEL_NAME: stocknet
+        ports:
+            - "8501:8501"
+        volumes:
+            - type: bind
+              source: ${PWD}/ml_app/stocknet
+              target: /models/stocknet
+        networks:
+            - stock_network
+
     pgadmin:
         image: dpage/pgadmin4
         environment:
