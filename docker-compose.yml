@@ -32,16 +32,25 @@ services:
 
     tfserving:
         image: tensorflow/serving
+        command:
+            - "--model_config_file_poll_wait_seconds=60"
         environment:
             MODEL_NAME: stocknet
         ports:
             - "8501:8501"
         volumes:
             - type: bind
+            #   source: mlmodel
               source: ${PWD}/ml_app/stocknet
               target: /models/stocknet
         networks:
             - stock_network
+
+
+    # predict_api:
+    #     build:
+    #         context: ml_inference/
+
 
     pgadmin:
         image: dpage/pgadmin4
@@ -58,6 +67,7 @@ services:
 volumes:
     pgdata:
     pgadmin:
+    mlmodel:
 
 networks:
     stock_network:
