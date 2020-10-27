@@ -33,41 +33,59 @@ services:
     tfserving:
         image: tensorflow/serving
         command:
-            - "--model_config_file_poll_wait_seconds=60"
+            - "--model_config_file_poll_wait_seconds=5"
         environment:
             MODEL_NAME: stocknet
         ports:
             - "8501:8501"
         volumes:
-            - type: bind
-            #   source: mlmodel
-              source: ${PWD}/ml_app/stocknet
-              target: /models/stocknet
+            - type: volume
+              source: mlmodel_vol
+              target: /models
+            # - type: bind
+            #   source: ${PWD}/ml_train/stocknet
+            #   target: /models/stocknet
         networks:
             - stock_network
+        depends_on:
+            - train_ml
 
+    train_ml:
+        build:
+            context: ml_train/
+        command: "uvicorn main:app --host 0.0.0.0 --port 8000"
+            # - "gunicorn --bind=0.0.0.0:8000 -k uvicorn.workers.UvicornWorker main:app"
+            # - "uvicorn main:app --host 0.0.0.0 --port 8000"
+        ports:
+            - "8000:8000"
+        volumes:
+            - type: volume
+              source: mlmodel_vol
+              target: /models
+        networks:
+            - stock_network
 
     # predict_api:
     #     build:
     #         context: ml_inference/
 
 
-    pgadmin:
-        image: dpage/pgadmin4
-        environment:
-            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-user@email.com}
-            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-user}
-        ports:
-            - "5050:80"
-        volumes:
-            - pgadmin:/root/.pgadmin
-        networks:
-            - stock_network
+    # pgadmin:
+    #     image: dpage/pgadmin4
+    #     environment:
+    #         PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-user@email.com}
+    #         PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-user}
+    #     ports:
+    #         - "5050:80"
+    #     volumes:
+    #         - pgadmin:/root/.pgadmin
+    #     networks:
+    #         - stock_network
 
 volumes:
     pgdata:
     pgadmin:
-    mlmodel:
+    mlmodel_vol:
 
 networks:
     stock_network:
