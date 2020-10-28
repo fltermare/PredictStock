@@ -47,15 +47,14 @@ services:
             #   target: /models/stocknet
         networks:
             - stock_network
-        depends_on:
-            - train_ml
+        # depends_on:
+            # - train_ml
 
     train_ml:
         build:
             context: ml_train/
-        command: "uvicorn main:app --host 0.0.0.0 --port 8000"
-            # - "gunicorn --bind=0.0.0.0:8000 -k uvicorn.workers.UvicornWorker main:app"
-            # - "uvicorn main:app --host 0.0.0.0 --port 8000"
+        command: "gunicorn --bind=0.0.0.0:8000 -k uvicorn.workers.UvicornWorker main:app"
+        # command: "uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
         ports:
             - "8000:8000"
         volumes:
@@ -65,9 +64,19 @@ services:
         networks:
             - stock_network
 
-    # predict_api:
-    #     build:
-    #         context: ml_inference/
+    predict_api:
+        build:
+            context: ml_predict/
+        command: "gunicorn --bind=0.0.0.0:8888 -k uvicorn.workers.UvicornWorker main:app"
+        # command: "uvicorn main:app --host 0.0.0.0 --port 8888 --reload"
+        ports:
+            - "8888:8888"
+        # volumes:
+        #     - type: bind
+        #       source: ${PWD}/ml_predict/
+        #       target: /app
+        networks:
+            - stock_network
 
 
     # pgadmin:
