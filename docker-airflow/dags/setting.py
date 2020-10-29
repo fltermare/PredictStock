@@ -1,6 +1,7 @@
 import os
 import psycopg2
 import pandas as pd
+import requests
 
 
 class Setting:
@@ -25,7 +26,10 @@ class Setting:
             FROM history as h;
         """
         df = pd.read_sql(para_p_sql, con=self.conn)
+        self.conn.close()
+        # return ['0050']
+        # return ['0050', '0056']
         return sorted(df['stock_code'].values)
 
-a = Setting()
-print(a.stock_code_list)
+# a = Setting()
+# print(a.stock_code_list)

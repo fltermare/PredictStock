@@ -4,16 +4,17 @@ http://airflow.readthedocs.org/en/latest/tutorial.html
 """
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
+from airflow.operators.dummy_operator import DummyOperator
 from datetime import datetime, timedelta
 from setting import Setting
 
-settings = Setting()
+SETTINGS = Setting()
 
 default_args = {
-    "owner": "airflow",
+    "owner": "Albert",
     "depends_on_past": False,
-    "start_date": datetime(2015, 6, 1),
-    "email": ["airflow@airflow.com"],
+    "start_date": datetime(2020, 10, 20),
+    "email": ["albert@airflow.com"],
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,
@@ -24,27 +25,54 @@ default_args = {
     # 'end_date': datetime(2016, 1, 1),
 }
 
-dag = DAG("helloworld", default_args=default_args, schedule_interval=timedelta(1))
 
-# t1, t2 and t3 are examples of tasks created by instantiating operators
-t1 = BashOperator(task_id="print_date", bash_command="date", dag=dag)
+# def create_dag(dag_id,
+#                schedule,
+#                default_args,
+#                settings):
+#     dag = DAG(dag_id, default_args=default_args, schedule_interval=schedule)
+#     with dag:
+#         init = DummyOperator(
+#             task_id='Init',
+#             dag=dag
+#         )
+#         clear = DummyOperator(
+#             task_id='clear',
+#             dag=dag
+#         )
+#         for stock_code in settings.stock_code_list:
+#             tab = DummyOperator(
+#                 task_id=stock_code,
+#                 dag=dag
+#             )
+#             init >> tab >> clear
+#         return dag
 
-t2 = BashOperator(task_id="sleep", bash_command="sleep 5", retries=3, dag=dag)
+def create_dag(dag_id,
+               schedule,
+               default_args,
+               stock_code):
+    dag = DAG(dag_id, default_args=default_args, schedule_interval=schedule)
+    with dag:
+        init = DummyOperator(
+            task_id='Init',
+            dag=dag
+        )
+        done = DummyOperator(
+            task_id='Done',
+            dag=dag
+        )
+        tab = DummyOperator(
+            task_id=stock_code,
+            dag=dag
+        )
+        init >> tab >> done
+        return dag
 
-templated_command = """
-    {% for i in range(5) %}
-        echo "{{ ds }}"
-        echo "{{ macros.ds_add(ds, 7)}}"
-        echo "{{ params.my_param }}"
-    {% endfor %}
-"""
+# schedule = "@hourly"
+schedule = "0 */12 * * *"
 
-t3 = BashOperator(
-    task_id="templated",
-    bash_command=templated_command,
-    params={"my_param": "Parameter I passed in"},
-    dag=dag,
-)
+for stock_code in SETTINGS.stock_code_list:
+    dag_id = f"Dynamic_DAG_{stock_code}"
+    globals()[dag_id] = create_dag(dag_id, schedule, default_args, stock_code)
 
-t2.set_upstream(t1)
-t3.set_upstream(t1)
