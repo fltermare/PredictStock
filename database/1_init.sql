@@ -7,26 +7,26 @@ CREATE TABLE stock (
 
 CREATE TABLE history (
     date                DATE NOT NULL,
-    capacity            BIGINT NOT NULL,
-    turnover            BIGINT NOT NULL,
+    volume              BIGINT NOT NULL,
+    turnover            BIGINT,
     open                REAL NOT NULL,
     high                REAL NOT NULL,
     low                 REAL NOT NULL,
     close               REAL NOT NULL,
-    change              REAL NOT NULL,
-    transactions        BIGINT NOT NULL,
+    change              REAL,
+    transactions        BIGINT,
     stock_code          VARCHAR(20) REFERENCES stock(stock_code),
     PRIMARY KEY         (stock_code, date)
 );
 
 CREATE TABLE tmp (
     date                DATE NOT NULL,
-    capacity            BIGINT NOT NULL,
-    turnover            BIGINT NOT NULL,
+    volume              BIGINT NOT NULL,
+    turnover            BIGINT,
     open                REAL NOT NULL,
     high                REAL NOT NULL,
     low                 REAL NOT NULL,
     close               REAL NOT NULL,
-    change              REAL NOT NULL,
-    transactions        BIGINT NOT NULL
+    change              REAL,
+    transactions        BIGINT
 );
