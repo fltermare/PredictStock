@@ -1,0 +1,52 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+
+    <!-- <h1>Dashboard  <small>Welcome {{session.username}}</small></h1>
+    <hr> -->
+    <!--
+    <a class="btn btn-success" href='/dashboard'>Add</a>
+    -->
+    {% if prediction %}
+        <h3>Stock: ({{prediction.stock_code}}) {{prediction.stock_name}}</h3>
+        <h3>Date: {{prediction.date}}</h3>
+        <h3>Expected Price: {{prediction.price}}</h3>
+    {% endif %}
+    <!-- <form action="" method="POST">
+        <div class="form-row">
+            <label for="stock_code" class="col-sm-2 col-form-label">Stock Code</label>
+            <select name="stock_code" class="form-control col-sm-6">
+            {% for stock_code, stock_name in stock_code_name %}
+                <option value="{{stock_code}}">({{stock_code}}) {{stock_name}}</option>
+            {% endfor %}
+            </select>
+
+            <input type="text" name="stock_code" class="form-control" value={{request.form.stock_code}}>
+
+        </div>
+        <div class="form-row">
+            <label for="date" class="col-sm-2 col-form-label">Date</label>
+            <input type="date" name="date" class="form-control col-sm-6" value={{request.form.date}}>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    </br> -->
+
+    <!-- <div class="embed-responsive embed-responsive-16by9">
+        <iframe frameborder='1'
+            noresize='noresize'
+            style='position: absolute; background: transparent; width: 100%; height:100%;'
+            src={{dash_url}}></iframe>
+    </div> -->
+
+    <div class="d-flex justify-content-center">
+        <iframe frameborder='1'
+            noresize='noresize'
+            style='position: absolute; background: transparent; width: 100%; height:100%;'
+            src={{dash_url}}></iframe>
+    </div>
+
+
+</div>
+
+{% endblock%}
