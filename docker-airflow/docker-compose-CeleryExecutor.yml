@@ -3,6 +3,8 @@ services:
     redis:
         image: 'redis:5.0.5'
         # command: redis-server --requirepass redispass
+        networks:
+            - predictstock_stock_network
 
     postgres:
         image: postgres:9.6
@@ -14,6 +16,8 @@ services:
         #     - PGDATA=/var/lib/postgresql/data/pgdata
         # volumes:
         #     - ./pgdata:/var/lib/postgresql/data/pgdata
+        networks:
+            - predictstock_stock_network
 
     webserver:
         image: puckel/docker-airflow:1.10.9
@@ -41,6 +45,8 @@ services:
             interval: 30s
             timeout: 30s
             retries: 3
+        networks:
+            - predictstock_stock_network
 
     flower:
         image: puckel/docker-airflow:1.10.9
@@ -53,6 +59,8 @@ services:
         ports:
             - "5555:5555"
         command: flower
+        networks:
+            - predictstock_stock_network
 
     scheduler:
         image: puckel/docker-airflow:1.10.9
@@ -72,6 +80,8 @@ services:
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
         command: scheduler
+        networks:
+            - predictstock_stock_network
 
     worker:
         image: puckel/docker-airflow:1.10.9
@@ -90,3 +100,9 @@ services:
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
         command: worker
+        networks:
+            - predictstock_stock_network
+
+networks:
+    predictstock_stock_network:
+        external: true

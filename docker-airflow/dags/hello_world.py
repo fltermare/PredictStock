@@ -113,3 +113,4 @@ for stock_code in config.stock_code_list:
     dag_id = f"Dynamic_DAG_{stock_code}"
     globals()[dag_id] = create_dag(dag_id, schedule, default_args, stock_code, config)
 
+# docker-compose -f docker-compose-CeleryExecutor.yml up --scale worker=3
