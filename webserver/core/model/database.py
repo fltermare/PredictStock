@@ -33,19 +33,19 @@ class Stock(db.Model):
 class History(db.Model):
     __tablename__ = 'history'
     date = db.Column(db.DateTime, primary_key=True)
-    capacity = db.Column(db.BigInteger, nullable=False)
-    turnover = db.Column(db.BigInteger, nullable=False)
+    volume = db.Column(db.BigInteger, nullable=False)
+    turnover = db.Column(db.BigInteger, nullable=True)
     open = db.Column(db.Float, nullable=False)
     high = db.Column(db.Float, nullable=False)
     low = db.Column(db.Float, nullable=False)
     close = db.Column(db.Float, nullable=False)
-    change = db.Column(db.Float, nullable=False)
-    transactions = db.Column(db.BigInteger, nullable=False)
+    change = db.Column(db.Float, nullable=True)
+    transactions = db.Column(db.BigInteger, nullable=True)
     stock_code = db.Column(db.String(20), primary_key=True)
 
-    def __init__(self, date, capacity, turnover, open, high, low, close, change, transactions, stock_code):
+    def __init__(self, date, volume, turnover, open, high, low, close, change, transactions, stock_code):
         self.date = date
-        self.capacity = capacity
+        self.volume = volume
         self.turnover = turnover
         self.open = open
         self.high = high

@@ -7,13 +7,13 @@ from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import BranchPythonOperator, PythonOperator
 from datetime import datetime, timedelta
-from myutils import check_stock_day_exist, query_yahoo_finance
+from myutils import check_stock_day_exist, query_yahoo_finance, insert_new_data
 from setting import Setting
 
 default_args = {
     "owner": "Albert",
     "depends_on_past": False,
-    "start_date": datetime(2020, 10, 31),
+    "start_date": datetime(2020, 11, 1),
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,
@@ -52,7 +52,7 @@ def update_db(stock_code, config, **context):
     """ """
     df = context['task_instance'].xcom_pull(task_ids='fetch_stock')
 
-    # insert_new_data(stock_code, updated_df, db_path)
+    insert_new_data(stock_code, df, config)
 
     print('[*******update_db********]', df.shape)
 
@@ -106,7 +106,8 @@ def create_dag(dag_id,
 config = Setting()
 
 # schedule = "@hourly"
-schedule = "0 */12 * * *"
+# schedule = "0 */12 * * *"
+schedule = "0 1 * * *"
 
 for stock_code in config.stock_code_list:
     dag_id = f"Dynamic_DAG_{stock_code}"
