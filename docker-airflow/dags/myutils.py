@@ -12,9 +12,6 @@ def query_yahoo_finance(stock_code, start, execution_date):
     element = datetime.datetime.strptime(execution_date,"%Y-%m-%d")
     end = int(datetime.datetime.timestamp(element))
 
-    # for TW stock
-    stock_code += '.TW'
-
     site = "https://query1.finance.yahoo.com/v8/finance/chart/{stock_code:s}?period1={start:d}&period2={end:d}&interval=1d&events=history".format(
                 stock_code=stock_code, start= start, end=end)
 
