@@ -1,47 +1,36 @@
-## Machine Learning Based Taiwan Stock Prediction
+## Machine Learning Based Taiwan Stock Prediction (rewriting now)
 ---
 #### Usage
-```
-usage: run.py [-h] [--init] [--start] [--update] [--train]
+* Start Services
+  ```sh
+  # at current directory
+  $ docker-compose up
 
-optional arguments:
-  -h, --help  show this help message and exit
-  --init      initialize database
-  --start     start web serivce
-  --update    get latest stocks' prices
-  --train     train new model based on current dataset
-```
-#### Create Virtual Environment
-Create venv and install packages
-```
-$ python3 -m venv env
-$ source env/bin/activate
+  # open another shell
+  $ cd airflow/
+  $ docker-compose -f docker-compose-LocalExecutor.yml up
+  ```
+* Stop Services
+  ```sh
+  # at current directory
+  $ docker-compose down
 
-(env) $ pip install pip --upgrade
-(env) $ pip install -r requirements.txt
-```
-
-#### **First Launch**
-Use the following command to initialize sqlite database and Airflow database
-```
-(env) $ python run.py --init
-```
+  # another shell
+  $ cd airflow/
+  $ docker-compose -f docker-compose-LocalExecutor.yml down
+  ```
 
 #### Launch
 Activate the environment, open two terminals and run following commands respectively
 * start flask webserver ( `localhost:5000` )  
-user can view/add/remove stock history through webpage.
-```
-(env) $ python run.py --start
-```
-* start Airflow scheduler & webserver ( `localhost:8080` )
-```
-(env) $ python run.py --update
-```
+  user can view / add / remove stock history through webpage.
 
-#### Update ML model
-Use data in database and train a new model (LSTM)   
-* Once new stock is added, the ML model needs to be retrained
-```
-(env) $ python run.py --train
-```
+* visit Airflow webserver ( `localhost:8080` )
+
+
+#### References
+- docker-airflow
+  - https://github.com/puckel/docker-airflow
+- price dashboard
+  - https://github.com/STATWORX/blog/tree/master/DashApp
+  - https://www.statworx.com/at/blog/how-to-build-a-dashboard-in-python-plotly-dash-step-by-step-tutorial/
