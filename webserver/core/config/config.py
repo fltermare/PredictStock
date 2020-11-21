@@ -17,12 +17,14 @@ class DevelopmentConfig(BaseConfig):
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@db:5432/db"
+    AIRFLOW_WEBSERVER = "http://airflow_webserver:8080"
 
 
 class LocalTestConfig(BaseConfig):
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = "postgresql://postgres:postgres@localhost:5432/db"
+    AIRFLOW_WEBSERVER = "http://127.0.0.1:8080"
 
 # class TestingConfig(BaseConfig):
 #     TESTING = True

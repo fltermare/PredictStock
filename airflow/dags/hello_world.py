@@ -13,7 +13,7 @@ from setting import Setting
 default_args = {
     "owner": "Albert",
     "depends_on_past": False,
-    "start_date": datetime(2020, 11, 1),
+    "start_date": datetime(2020, 11, 20),
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,

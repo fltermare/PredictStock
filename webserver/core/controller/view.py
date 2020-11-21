@@ -38,8 +38,8 @@ def manage():
 
     if request.method == "POST":
         print('--------------')
-        # todo
         add_new_stock(request.form['stock_code'])
+        flash('[Added] Downloading Now', 'success')
         print('--------------')
 
     stock_info = get_available_stock_info()
@@ -52,7 +52,6 @@ def manage():
 def remove(stock_code):
 
     try:
-        # todo
         delete_stock(stock_code)
         flash('Delete', 'success')
     except Exception as err:
