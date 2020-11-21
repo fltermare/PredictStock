@@ -23,8 +23,8 @@ class Setting:
     def select_all_stock_codes(self):
         conn = self.db_conn()
         para_p_sql = """
-            SELECT DISTINCT h.stock_code
-            FROM history as h;
+            SELECT DISTINCT s.stock_code
+            FROM stock as s;
         """
         df = pd.read_sql(para_p_sql, con=conn)
         conn.close()

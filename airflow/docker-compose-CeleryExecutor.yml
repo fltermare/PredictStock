@@ -19,7 +19,7 @@ services:
         networks:
             - predictstock_stock_network
 
-    webserver:
+    airflow_webserver:
         image: puckel/docker-airflow:1.10.9
         restart: always
         depends_on:
@@ -66,7 +66,7 @@ services:
         image: puckel/docker-airflow:1.10.9
         restart: always
         depends_on:
-            - webserver
+            - airflow_webserver
         volumes:
             - ./dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins

@@ -13,7 +13,7 @@ services:
         networks:
             - predictstock_stock_network
 
-    webserver:
+    airflow_webserver:
         image: puckel/docker-airflow:1.10.9
         restart: always
         depends_on:

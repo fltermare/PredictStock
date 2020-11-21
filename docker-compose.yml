@@ -1,7 +1,7 @@
 version: '3.3'
 
 services:
-    webserver:
+    flask_server:
         build:
             context: webserver/
         # command: flask run --host=0.0.0.0

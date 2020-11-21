@@ -1,19 +1,11 @@
 # from .. import db
 from flask_sqlalchemy import SQLAlchemy
+from flask import current_app
+import requests
+import time
 import pandas as pd
 
 db = SQLAlchemy()
-
-# def get_available_stock():
-#     sql_cmd = """
-#         SELECT *
-#         FROM stock
-#     """
-#     query_data = db.engine.execute(sql_cmd)
-#     print(query_data)
-#     res = query_data.fetchall()
-
-#     return str(res)
 
 
 class Stock(db.Model):
@@ -108,3 +100,63 @@ def get_options(list_stocks):
         dict_list.append({'label': i, 'value': i})
 
     return dict_list
+
+
+def get_available_stock_info():
+    """
+    Args:
+        None
+
+    Returns:
+        res: [(stock_code, first record date, last record date)]; List[tuple]
+             e.g.
+                 [('006208.TW', '2012-06-22', '2020-11-19'), ...]
+    """
+
+    query = db.session.query(History.stock_code, db.func.min(History.date), db.func.max(History.date)).group_by(History.stock_code).all()
+    res = []
+    for code, first_date, last_date in query:
+        res.append((code, first_date.strftime("%Y-%m-%d"), last_date.strftime("%Y-%m-%d")))
+
+    return res
+
+
+def add_new_stock(stock_code):
+    # add to stock
+    new_stock = Stock(stock_code, None, None, None)
+    db.session.add(new_stock)
+
+    try:
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        print("Failed to add" + err)
+
+    # unpause airflow dag
+    airflow_webserver_url = current_app.config['AIRFLOW_WEBSERVER']
+    dag_id = "Dynamic_DAG_{stock_code}".format(stock_code=stock_code)
+    unpause_url = "{airflow_webserver_url}/api/experimental/dags/{dag_id}/paused/false".format(airflow_webserver_url=airflow_webserver_url, dag_id=dag_id)
+
+    time.sleep(2)
+    a = requests.get(unpause_url)
+    print(a)
+
+
+def delete_stock(stock_code):
+
+    # delete from stock and history
+    history_objs = db.session.query(History).filter(History.stock_code==stock_code).delete()
+    stock_objs = db.session.query(Stock).filter(Stock.stock_code==stock_code).delete()
+
+    # delete airflow jobs
+    airflow_webserver_url = current_app.config['AIRFLOW_WEBSERVER']
+    dag_id = "Dynamic_DAG_{stock_code}".format(stock_code=stock_code)
+    dag_url = "{airflow_webserver_url}/api/experimental/dags/{dag_id}".format(airflow_webserver_url=airflow_webserver_url, dag_id=dag_id)
+    requests.delete(dag_url)
+
+
+    try:
+        db.session.commit()
+    except Exception as err:
+        db.session.rollback()
+        print("Failed to delete" + err)
