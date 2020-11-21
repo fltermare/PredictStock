@@ -4,17 +4,6 @@ import pandas as pd
 
 db = SQLAlchemy()
 
-# def get_available_stock():
-#     sql_cmd = """
-#         SELECT *
-#         FROM stock
-#     """
-#     query_data = db.engine.execute(sql_cmd)
-#     print(query_data)
-#     res = query_data.fetchall()
-
-#     return str(res)
-
 
 class Stock(db.Model):
     __tablename__ = 'stock'
@@ -108,3 +97,32 @@ def get_options(list_stocks):
         dict_list.append({'label': i, 'value': i})
 
     return dict_list
+
+
+def get_available_stock_info():
+    """
+    Args:
+        None
+
+    Returns:
+        res: [(stock_code, first record date, last record date)]; List[tuple]
+             e.g.
+                 [('006208.TW', '2012-06-22', '2020-11-19'), ...]
+    """
+
+    query = db.session.query(History.stock_code, db.func.min(History.date), db.func.max(History.date)).group_by(History.stock_code).all()
+    res = []
+    for code, first_date, last_date in query:
+        res.append((code, first_date.strftime("%Y-%m-%d"), last_date.strftime("%Y-%m-%d")))
+
+    return res
+
+
+def add_new_stock(stock_code):
+    print('[Todo] add new stock', stock_code)
+    return
+
+
+def delete_stock(stock_code):
+    print('[Todo] delete', stock_code)
+    return
