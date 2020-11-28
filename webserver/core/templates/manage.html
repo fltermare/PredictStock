@@ -14,7 +14,7 @@
             <input type="text" name="stock_code" class="form-control col-sm-6" value={{request.form.stock_code}}>
         </div>
         <!-- "example2" loading effect-->
-        <button type="submit" class="btn btn-primary example2">Add</button>
+        <button type="submit" class="btn btn-info example2">ADD STOCK</button>
     </form>
     <br>
 
@@ -31,20 +31,19 @@
                 <td>{{first_date}}</td>
                 <td>{{last_date}}</td>
                 <td>
-                    <div class="container text-center">
-                        <form action="{{url_for('view_page.remove', stock_code=stock_code)}}" method="POST">
+                    <div class="d-flex flex-row justify-content-around">
+                        <div class="flex-sm-column">
+                            <form action="{{url_for('view_page.predict', stock_code=stock_code)}}" method="POST">
+                                <button type="submit" class="btn btn-primary example2">PREDICT</button>
+                            </form>
+                        </div>
+                        <div class="flex-sm-column">
+                            <form action="{{url_for('view_page.remove')}}" method="POST">
+                                <input type='hidden', name='stock_code', value={{stock_code}}>
                                 <input type="hidden" name="_method" value="DELETE">
                                 <button type="submit" class="btn btn-danger example2">DELETE</button>
-                        </form>
-
-                        <!--
-                            <form action="{{url_for('view_page.remove', stock_code=stock_code)}}" method="POST">
-                            <input type="hidden" name="_method" value="FETCH">
-                            <button type="submit" class="btn btn-success example2">Update</button>
-                            <input type="submit" value="Update" class="btn btn-success">
                             </form>
-                        -->
-
+                        </div>
                     </div>
                 </td>
             </tr>
